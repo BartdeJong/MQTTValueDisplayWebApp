@@ -21,11 +21,11 @@ export default class MQTT {
 
 	listen(){
 		this._client.on("message", (topic, message) => {
-			console.log(message.toString());
+			// console.log(message.toString());
 			let newMessage = JSON.parse(message.toString())
 			newMessage["topic"] = this._topic;
 
-			console.log(newMessage);
+			// console.log(newMessage);
 			
 			let storeMessage = this.findMessage();
 

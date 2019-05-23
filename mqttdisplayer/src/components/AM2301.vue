@@ -1,8 +1,8 @@
 <template>
   <tr v-if="Message(topic) != null" class="found">
     <td>{{topic}}</td>
-    <td>{{Message(topic).AM2301.Temperature}} &#8451;</td>
-    <td>{{Message(topic).AM2301.Humidity}} %</td>
+    <td class="largeText">{{Message(topic).AM2301.Temperature}} &#8451;</td>
+    <td class="largeText">{{Message(topic).AM2301.Humidity}} %</td>
   </tr>
   <tr v-else class="notFound">
     <td>{{topic}}</td>
@@ -21,11 +21,18 @@ export default {
   data() {
     return {
       mqtt: null,
-      broker: "wss://m24.cloudmqtt.com:36910",
+      // broker: "wss://m24.cloudmqtt.com:36910",
+      // options: {
+      //   clientId: this.getRandomClientId(),
+      //   username: "gfvpvdvd",
+      //   password: "UsI25cETE6yQ",
+      //   topic: this.topic
+      // }
+      broker: "ws://217.120.19.8:1884",
       options: {
         clientId: this.getRandomClientId(),
-        username: "gfvpvdvd",
-        password: "UsI25cETE6yQ",
+        username: "local-user",
+        password: "Brt.1234",
         topic: this.topic
       }
     };
@@ -61,4 +68,8 @@ export default {
 		color: #8ce265;
 		font-weight: bold;
 	}
+
+  .largeText{
+    font-size: xx-large;
+  }
 </style>
