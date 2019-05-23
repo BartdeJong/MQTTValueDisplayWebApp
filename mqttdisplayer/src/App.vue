@@ -1,8 +1,5 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link>
-    </div>
     <router-view/>
   </div>
 </template>
@@ -24,5 +21,9 @@
       color: #42b983;
     }
   }
+}
+
+body{
+	background-color: #000000;
 }
 </style>

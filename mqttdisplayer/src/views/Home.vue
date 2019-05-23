@@ -1,73 +1,92 @@
 <template>
-  <div class="home">
-    <h1>{{temperature}}</h1>
+  <div class="home darkest">
+    <ion-card v-if="problem()" class="problem">
+      <ion-card-title class="problemText">The following problems have occured</ion-card-title>
+      <ion-card-subtitle v-if="!isOnline" class="problemText">Offline</ion-card-subtitle>
+    </ion-card>
+	<ion-card-subtitle>{{lastMessageTime}}</ion-card-subtitle>
+    <ion-card class="sizeUp">
+      <table class="centered">
+        <thead class="gray">
+          <tr>
+            <th>Location</th>
+            <th>Temperature</th>
+            <th>Humidity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <AM2301 :topic="'CloudMQTT'"></AM2301>
+          <AM2301 :topic="'Test1'"></AM2301>
+          <AM2301 :topic="'Test2'"></AM2301>
+          <AM2301 :topic="'Test3'"></AM2301>
+        </tbody>
+      </table>
+    </ion-card>
   </div>
 </template>
 
 <script>
-var mqtt = require("mqtt");
-
-var options = {
-  clientId: "234592u234y5782ehr9",
-  username: "gfvpvdvd",
-  password: "UsI25cETE6yQ"
-};
-var client = mqtt.connect("wss://m24.cloudmqtt.com:36910", options);
-
-client.on("connect", function() {
-  client.subscribe("tele/CloudMQTT/SENSOR", function(err) {
-    // if (!err) {
-    //   client.publish("presence", "Hello mqtt");
-    // }
-  });
-});
-
-client.on("message", function(topic, message) {
-  // message is Buffer
-  console.log(message.toString());
-  this.tempFromMessage(message.toString());
-  //   client.end()
-});
+import MQTT from "@/components/mqtt";
+import { mapGetters } from "vuex";
+import AM2301 from "@/components/AM2301.vue";
+import { Promise } from "q";
+import { setInterval } from "timers";
 
 export default {
   name: "home",
   data() {
     return {
-      client: mqtt.Client,
-      temperature: "-20";
+      isOnline: false
     };
   },
-  components: {},
-  methods: {
-    tempFromMessage(message) {
-      this.temperature = message;
-    }
+  computed: {
+    ...mapGetters(["Message", "lastMessageTime"])
   },
-  mounted() {
-    var mqtt = require("mqtt");
-
-    var options = {
-      clientId: "234592u234y5782ehr9",
-      username: "gfvpvdvd",
-      password: "UsI25cETE6yQ"
-    };
-
-    client = mqtt.connect("wss://m24.cloudmqtt.com:36910", options);
-
-    client.on("connect", function() {
-      client.subscribe("tele/CloudMQTT/SENSOR", function(err) {
-        // if (!err) {
-        //   client.publish("presence", "Hello mqtt");
-        // }
+  components: {
+    AM2301
+  },
+  created() {
+    setInterval(() => {
+      this.online().then(response => {
+        this.isOnline = response;
       });
-    });
-
-    client.on("message", function(topic, message) {
-      // message is Buffer
-      console.log(message.toString());
-      this.temperature = message;
-      //   client.end()
-    });
+    }, 5000);
+  },
+  methods: {
+    problem() {
+      return !this.isOnline;
+    },
+    online() {
+      return new Promise((resolve, reject) => {
+        fetch("https://jsonplaceholder.typicode.com/todos/1")
+          .then(response => {
+            if (response.status == 200) resolve(true);
+            else resolve(false);
+          })
+          .catch(() => {
+            resolve(false);
+          });
+      });
+    }
   }
 };
 </script>
+
+<style lang="scss">
+.sizeUp {
+  font-size: large;
+}
+
+.gray {
+  background-color: #313131;
+  color: #a8a8a8;
+}
+
+.problem {
+  background-color: #b43131;
+}
+
+.problemText {
+  color: #ffffff;
+}
+</style>
