@@ -1,12 +1,13 @@
 <template>
-  <div class="toggle">
-    <ion-item class="toggle">
-      <ion-label>Display only</ion-label>
-      <ion-toggle
+  <div>
+    <ion-item class="toggleBox">
+      <ion-label style="padding-left: 5%;">Display only</ion-label>
+	  <div :class="{ 'inActive': !displayOnly }">OFF</div>
+      <ion-toggle class="toggle"
         @ionChange="displayOnly = !displayOnly"
         v-bind:checked="displayOnly"
-        color="dark"
       ></ion-toggle>
+	  <div :class="{ 'active': displayOnly }">ON</div>
     </ion-item>
     <ion-card v-if="problem" class="problem">
       <ion-card-title class="problemText">The following problems have occured</ion-card-title>
@@ -69,7 +70,13 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="css">
+.toggleBox{
+	--background: #000000;
+	color: #ffffff;
+	padding: 0;
+}
+
 .problem {
   background-color: #b43131;
 }
@@ -79,6 +86,17 @@ export default {
 }
 
 .toggle{
-    background-color: #000000;
+    --background: rgb(122, 122, 122);
+    --handle-background: #3d3d3d;
+	--handle-background-checked: #3d3d3d;
+	--background-checked: rgb(122, 122, 122);
+}
+
+.active{
+	color: green;
+}
+
+.inActive{
+	color: rgb(172, 0, 0);
 }
 </style>
