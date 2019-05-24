@@ -18,6 +18,7 @@
         </tbody>
       </table>
     </ion-card>
+	<clock></clock>
   </div>
 </template>
 
@@ -25,7 +26,8 @@
 import MQTT from "@/components/mqtt";
 import { mapGetters } from "vuex";
 import AM2301 from "@/components/AM2301.vue";
-import problem from "@/components/problem.vue"
+import problem from "@/components/problem.vue";
+import clock from "@/components/clock.vue";
 import { Promise } from "q";
 import { setInterval } from "timers";
 
@@ -41,7 +43,8 @@ export default {
   },
   components: {
     AM2301,
-    problem
+    problem,
+	clock
   },
 };
 </script>
