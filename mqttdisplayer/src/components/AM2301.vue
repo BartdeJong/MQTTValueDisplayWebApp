@@ -1,10 +1,15 @@
 <template>
-  <tr v-if="Message(topic) != null" class="found" :class="{'notReceiving': isLongNoReceived}">
-    <td>{{topic}}</td>
+  <tr
+    v-if="Message(topic) != null"
+    class="found"
+    :class="{'minuteNotReceiving': isMinuteNoReceive, 'halfAnHourNotReceiving': isHalfAnHourNoReceive}"
+  >
+    <td>
+      <div>{{topic}}</div>
+      <div v-if="isMinuteNoReceive">{{messageAge}}</div>
+    </td>
     <td class="largeText">{{Message(topic).AM2301.Temperature}} &#8451;</td>
-    <td
-      class="largeText"
-    >{{Message(topic).AM2301.Humidity}} %</td>
+    <td class="largeText">{{Message(topic).AM2301.Humidity}} %</td>
   </tr>
   <tr v-else class="notFound">
     <td>{{topic}}</td>
@@ -22,7 +27,9 @@ export default {
   props: ["topic"],
   data() {
     return {
-		isLongNoReceived: false,
+      isMinuteNoReceive: false,
+      isHalfAnHourNoReceive: false,
+      messageAge: 0,
       mqtt: null,
       // broker: "wss://m24.cloudmqtt.com:36910",
       // options: {
@@ -41,14 +48,15 @@ export default {
     };
   },
   created() {
-	this.mqtt = new MQTT(this.broker, this.options);
-	setInterval(() => {
-      this.isLongNoReceived = this.longNoReceive();
-    }, 5000);
+    this.mqtt = new MQTT(this.broker, this.options);
+    setInterval(() => {
+      this.isMinuteNoReceive = this.minuteNoReceive();
+      this.isHalfAnHourNoReceive = this.halfAnHourNoReceive();
+      this.messageAge = this.messageAgeCalculator();
+    }, 500);
   },
   computed: {
-    ...mapGetters(["Message"]),
-    
+    ...mapGetters(["Message"])
   },
   methods: {
     getRandomClientId() {
@@ -58,13 +66,38 @@ export default {
         string += char;
       }
       return string;
-	},
-	longNoReceive() {
-		console.log(Date.now() - Date.parse(this.Message(this.topic).Time) - 3600000 - 60000);
-		if((Date.now() - Date.parse(this.Message(this.topic).Time) - 3600000 * 3) > 0)
-			return true;
-		else
-			return false;
+    },
+    minuteNoReceive() {
+      if (Date.now() - Date.parse(this.Message(this.topic).Time) - 300000 > 0)
+        return true;
+      else return false;
+    },
+    halfAnHourNoReceive() {
+      if (Date.now() - Date.parse(this.Message(this.topic).Time) - 1800000 > 0)
+        return true;
+      else return false;
+    },
+    messageAgeCalculator() {
+      let seconds = Math.floor(
+        (Date.now() - Date.parse(this.Message(this.topic).Time)) / 1000
+      );
+      var days = Math.floor(seconds / (3600 * 24));
+      seconds -= days * 3600 * 24;
+      var hrs = Math.floor(seconds / 3600);
+      seconds -= hrs * 3600;
+      var mnts = Math.floor(seconds / 60);
+      seconds -= mnts * 60;
+
+      let dayFiller = "";
+      let hourFiller = "";
+      let minuteFiller = "";
+      let secondFiller = "";
+
+      if (days < 10) dayFiller = "0";
+      if (hrs < 10) hourFiller = "0";
+      if (mnts < 10) minuteFiller = "0";
+      if (seconds < 10) secondFiller = "0";
+      return dayFiller + days + ":" +  hourFiller + hrs + ":" + minuteFiller + mnts + ":" + secondFiller + seconds;
     }
   }
 };
@@ -86,7 +119,11 @@ export default {
   font-size: xx-large;
 }
 
-.notReceiving {
-  color: orangered !important;
+.minuteNotReceiving {
+  color: rgb(255, 238, 0);
+}
+
+.halfAnHourNotReceiving {
+  color: orangered;
 }
 </style>

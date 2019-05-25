@@ -10,7 +10,7 @@
 	  <div :class="{ 'active': displayOnly }">ON</div>
     </ion-item>
     <ion-card v-if="problem" class="problem">
-      <ion-card-title class="problemText">The following problems have occured</ion-card-title>
+      <ion-card-title class="problemTitle">The following problems have occured</ion-card-title>
       <ion-card-subtitle v-if="!isOnline" class="problemText">&#9632; Offline</ion-card-subtitle>
       <ion-card-subtitle v-if="!batteryCharging" class="problemText">&#9632; Not charging</ion-card-subtitle>
     </ion-card>
@@ -82,6 +82,11 @@ export default {
 }
 
 .problemText {
+  color: #ffffff;
+  font-size: x-large;
+}
+
+.problemTitle {
   color: #ffffff;
 }
 

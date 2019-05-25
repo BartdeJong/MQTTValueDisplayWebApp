@@ -11,6 +11,7 @@
     "core-js": "^2.6.5",
     "materialize-css": "^1.0.0",
     "mqtt": "^2.18.8",
+    "nosleep.js": "^0.9.0",
     "register-service-worker": "^1.6.2",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
