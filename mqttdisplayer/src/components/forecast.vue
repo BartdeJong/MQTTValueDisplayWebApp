@@ -1,6 +1,30 @@
 <template>
   <ion-card class="forecast" v-if="forecast != null">
-    <div class="text">{{forecast}}</div>
+    <table class="centered">
+          <thead class="gray">
+            <tr>
+              <th>Day</th>
+              <th>Temperature</th>
+              <th>Icon</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Today</td>
+              <td class="text">{{forecast.forecast.forecastday[0].day.maxtemp_c}} &#8451;</td>
+              <td>
+                <img :src="forecast.forecast.forecastday[0].day.condition.icon">
+                </td>
+            </tr>
+            <tr>
+              <td>Tomorrow</td>
+              <td class="text">{{forecast.forecast.forecastday[1].day.maxtemp_c}} &#8451;</td>
+              <td>
+                <img :src="forecast.forecast.forecastday[1].day.condition.icon">
+                </td>
+            </tr>
+          </tbody>
+        </table>
   </ion-card>
 </template>
 
@@ -20,25 +44,28 @@ export default {
       this.latitude = crd.latitude;
       this.longitude = crd.longitude;
       console.log(crd.latitude + "     " + crd.longitude);
+      this.getForecast().then(response => {
+        this.forecast = response;
+        console.log(response);
+      });
     },
     getForecast() {
-      return new Promise(resolve => {
-        fetch(
-          "https://api.apixu.com/v1/current.json?key=880e39005a8041e8a18180832192505&q=" + this.latitude + "," + this.longitude).then(response => {
-              console.log(response.json());
-          resolve(response);
-        });
-      });
+      return fetch(
+        "https://api.apixu.com/v1/forecast.json?key=880e39005a8041e8a18180832192505&q=" +
+          this.latitude +
+          "," +
+          this.longitude + 
+          "&days=2"
+      ).then(response => response.json());
     }
   },
   created() {
     navigator.geolocation.getCurrentPosition(this.success);
     setInterval(() => {
       this.getForecast().then(response => {
-          console.log(response);
         this.forecast = response;
       });
-    }, 3000);
+    }, 600000);
   }
 };
 </script>
@@ -50,6 +77,11 @@ export default {
 
 .text {
   color: white;
-  font-size: 500%;
+  font-size: 250%;
+}
+
+.gray {
+  background-color: #313131;
+  color: #a8a8a8;
 }
 </style>

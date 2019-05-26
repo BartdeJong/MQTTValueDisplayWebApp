@@ -1,6 +1,6 @@
 <template>
   <ion-card class="clock">
-    <ion-card-title class="text">{{time}}</ion-card-title>
+    <ion-card-title class="clockText">{{time}}</ion-card-title>
   </ion-card>
 </template>
 
@@ -33,7 +33,7 @@ export default {
   background-color: #2a2a2a;
 }
 
-.text {
+.clockText {
   color: white;
   font-size: 500%;
 }

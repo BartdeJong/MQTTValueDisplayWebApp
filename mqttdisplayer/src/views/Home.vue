@@ -3,7 +3,7 @@
     <div class="home darkest">
       <problem/>
       <clock/>
-      <!-- <forecast/> -->
+      <forecast/>
       <ion-card class="sizeUp">
         <table class="centered">
           <thead class="gray">
