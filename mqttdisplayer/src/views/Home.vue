@@ -14,9 +14,9 @@
             </tr>
           </thead>
           <tbody>
-            <AM2301 :topic="'wemosd1'"></AM2301>
-            <AM2301 :topic="'buiten'"></AM2301>
-            <AM2301 :topic="'tuinkamer'"></AM2301>
+            <AM2301 :topic="'wemosd1'" :mqttName="'Slaapkamer'"></AM2301>
+            <AM2301 :topic="'buiten'" :mqttName="'Buiten'"></AM2301>
+            <AM2301 :topic="'tuinkamer'" :mqttName="'Tuinkamer'"></AM2301>
             <!-- <AM2301 :topic="'Test3'"></AM2301> -->
           </tbody>
         </table>
@@ -68,6 +68,11 @@ export default {
 <style lang="scss">
 .sizeUp {
   font-size: large;
+  line-height: 0.5;
+
+  thead{
+	  line-height: 1.2;
+  }
 }
 
 .gray {
