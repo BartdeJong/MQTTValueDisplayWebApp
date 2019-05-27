@@ -1,30 +1,30 @@
 <template>
   <ion-card class="forecast" v-if="forecast != null">
     <table class="centered">
-          <thead class="gray">
-            <tr>
-              <th>Day</th>
-              <th>Temperature</th>
-              <th>Icon</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Today</td>
-              <td class="text">{{forecast.forecast.forecastday[0].day.maxtemp_c}} &#8451;</td>
-              <td>
-                <img :src="forecast.forecast.forecastday[0].day.condition.icon">
-                </td>
-            </tr>
-            <tr>
-              <td>Tomorrow</td>
-              <td class="text">{{forecast.forecast.forecastday[1].day.maxtemp_c}} &#8451;</td>
-              <td>
-                <img :src="forecast.forecast.forecastday[1].day.condition.icon">
-                </td>
-            </tr>
-          </tbody>
-        </table>
+      <thead class="gray">
+        <tr>
+          <th>Day</th>
+          <th>Temperature</th>
+          <th>Icon</th>
+        </tr>
+      </thead>
+      <tbody class="tableBody">
+        <tr>
+          <td style="color:white;">Today</td>
+          <td class="text">{{forecast.forecast.forecastday[0].day.maxtemp_c}} &#8451;</td>
+          <td>
+            <img :src="forecast.forecast.forecastday[0].day.condition.icon">
+          </td>
+        </tr>
+        <tr>
+          <td style="color:white;">Tomorrow</td>
+          <td class="text">{{forecast.forecast.forecastday[1].day.maxtemp_c}} &#8451;</td>
+          <td>
+            <img :src="forecast.forecast.forecastday[1].day.condition.icon">
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </ion-card>
 </template>
 
@@ -54,7 +54,7 @@ export default {
         "https://api.apixu.com/v1/forecast.json?key=880e39005a8041e8a18180832192505&q=" +
           this.latitude +
           "," +
-          this.longitude + 
+          this.longitude +
           "&days=2"
       ).then(response => response.json());
     }
@@ -73,15 +73,28 @@ export default {
 <style lang="scss">
 .forecast {
   background-color: #2a2a2a;
+  font-size: large;
+
+  thead{
+	  line-height: 1.2;
+  }
 }
 
 .text {
   color: white;
-  font-size: 250%;
+  font-size: xx-large;
 }
 
 .gray {
   background-color: #313131;
   color: #a8a8a8;
+}
+
+.tableBody {
+  line-height: 0;
+
+  td {
+    padding: 0px 5px !important;
+  }
 }
 </style>

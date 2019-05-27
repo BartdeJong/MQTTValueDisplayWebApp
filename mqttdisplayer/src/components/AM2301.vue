@@ -5,14 +5,14 @@
     :class="{'minuteNotReceiving': isMinuteNoReceive, 'halfAnHourNotReceiving': isHalfAnHourNoReceive}"
   >
     <td>
-      <div>{{topic}}</div>
+      <div>{{mqttName}}</div>
       <div v-if="isMinuteNoReceive">{{messageAge}}</div>
     </td>
     <td class="largeText">{{Message(topic).AM2301.Temperature}} &#8451;</td>
     <td class="largeText">{{Message(topic).AM2301.Humidity}} %</td>
   </tr>
   <tr v-else class="notFound">
-    <td>{{topic}}</td>
+    <td>{{mqttName}}</td>
     <td>not</td>
     <td>found</td>
   </tr>
@@ -24,13 +24,14 @@ import { mapGetters } from "vuex";
 
 export default {
   name: "AM2301",
-  props: ["topic"],
+  props: ["topic", "mqttName"],
   data() {
     return {
       isMinuteNoReceive: false,
       isHalfAnHourNoReceive: false,
       messageAge: 0,
       mqtt: null,
+      //   mqttName: this.mqttName,
       // broker: "wss://m24.cloudmqtt.com:36910",
       // options: {
       //   clientId: this.getRandomClientId(),
@@ -97,7 +98,19 @@ export default {
       if (hrs < 10) hourFiller = "0";
       if (mnts < 10) minuteFiller = "0";
       if (seconds < 10) secondFiller = "0";
-      return dayFiller + days + ":" +  hourFiller + hrs + ":" + minuteFiller + mnts + ":" + secondFiller + seconds;
+      return (
+        dayFiller +
+        days +
+        ":" +
+        hourFiller +
+        hrs +
+        ":" +
+        minuteFiller +
+        mnts +
+        ":" +
+        secondFiller +
+        seconds
+      );
     }
   }
 };
@@ -125,5 +138,12 @@ export default {
 
 .halfAnHourNotReceiving {
   color: orangered;
+}
+
+tr {
+  td {
+    padding: 0px 5px !important;
+	line-height: 1.5;
+  }
 }
 </style>
