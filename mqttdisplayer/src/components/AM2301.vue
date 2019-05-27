@@ -38,11 +38,11 @@ export default {
       //   password: "UsI25cETE6yQ",
       //   topic: this.topic
       // }
-      broker: "ws://217.120.19.8:1884",
+      broker: "wss://192.168.178.38:4884",
       options: {
         clientId: this.getRandomClientId(),
         username: "local-user",
-        password: "Brt.1234",
+        password: "TestBroker1234",
         topic: this.topic
       }
     };
