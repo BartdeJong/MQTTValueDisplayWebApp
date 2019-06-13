@@ -60,7 +60,7 @@ export default {
     AM2301,
     problem,
     clock,
-    forecast,
+    forecast
   }
 };
 </script>
@@ -70,8 +70,13 @@ export default {
   font-size: large;
   line-height: 0.5;
 
-  thead{
-	  line-height: 1.2;
+  thead {
+    line-height: 1.2;
+  }
+
+  th {
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 }
 
@@ -81,9 +86,15 @@ export default {
 }
 
 @keyframes example {
-  0% {transform: translate(0px, 0%);}
-  50% {transform: translate(0px, 5%);}
-  100% {transform: translate(0px, 0%);}
+  0% {
+    transform: translate(0px, 0%);
+  }
+  50% {
+    transform: translate(0px, 5%);
+  }
+  100% {
+    transform: translate(0px, 0%);
+  }
 }
 
 .move {

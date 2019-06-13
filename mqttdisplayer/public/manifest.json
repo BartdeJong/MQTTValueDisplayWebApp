@@ -1,6 +1,6 @@
 {
-  "name": "Temp",
-  "short_name": "Temp",
+  "name": "MQTT Weather",
+  "short_name": "Weather",
   "icons": [
     {
       "src": "./img/icons/android-chrome-192x192.png",

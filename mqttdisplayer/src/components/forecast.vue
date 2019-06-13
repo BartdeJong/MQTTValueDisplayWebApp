@@ -1,5 +1,8 @@
 <template>
   <ion-card class="forecast" v-if="forecast != null">
+    <ion-subtitle class="location">
+      {{forecast.location.name}}
+    </ion-subtitle>
     <table class="centered">
       <thead class="gray">
         <tr>
@@ -13,14 +16,14 @@
           <td style="color:white;">Today</td>
           <td class="text">{{forecast.forecast.forecastday[0].day.maxtemp_c}} &#8451;</td>
           <td>
-            <img :src="forecast.forecast.forecastday[0].day.condition.icon">
+            <img class="resize" :src="forecast.forecast.forecastday[0].day.condition.icon">
           </td>
         </tr>
         <tr>
           <td style="color:white;">Tomorrow</td>
           <td class="text">{{forecast.forecast.forecastday[1].day.maxtemp_c}} &#8451;</td>
           <td>
-            <img :src="forecast.forecast.forecastday[1].day.condition.icon">
+            <img class="resize" :src="forecast.forecast.forecastday[1].day.condition.icon">
           </td>
         </tr>
       </tbody>
@@ -43,10 +46,8 @@ export default {
       var crd = pos.coords;
       this.latitude = crd.latitude;
       this.longitude = crd.longitude;
-      console.log(crd.latitude + "     " + crd.longitude);
       this.getForecast().then(response => {
         this.forecast = response;
-        console.log(response);
       });
     },
     getForecast() {
@@ -70,13 +71,18 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .forecast {
   background-color: #2a2a2a;
   font-size: large;
 
   thead{
 	  line-height: 1.2;
+  }
+
+  th{
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 }
 
@@ -96,5 +102,16 @@ export default {
   td {
     padding: 0px 5px !important;
   }
+}
+
+img.resize {
+  padding-left: 17%;
+  max-width:80%;
+  max-height:80%;
+}
+
+.location{
+  font-size: x-large;
+  color: rgb(182, 182, 182);
 }
 </style>

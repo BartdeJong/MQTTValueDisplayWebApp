@@ -31,29 +31,23 @@ export default {
       isHalfAnHourNoReceive: false,
       messageAge: 0,
       mqtt: null,
-      //   mqttName: this.mqttName,
-      // broker: "wss://m24.cloudmqtt.com:36910",
-      // options: {
-      //   clientId: this.getRandomClientId(),
-      //   username: "gfvpvdvd",
-      //   password: "UsI25cETE6yQ",
-      //   topic: this.topic
-      // }
-      broker: "wss://192.168.178.38:4884",
+      broker: "wss://broker.0f.nl:8084/",
       options: {
-        clientId: this.getRandomClientId(),
-        username: "local-user",
-        password: "TestBroker1234",
-        topic: this.topic
+        rejectUnauthorized: false,
+        clientId: this.getRandomClientId()
+        // username: "local-user",
+        // password: "TestBroker1234"
       }
     };
   },
   created() {
-    this.mqtt = new MQTT(this.broker, this.options);
+    this.mqtt = new MQTT(this.broker, this.options, this.topic);
     setInterval(() => {
-      this.isMinuteNoReceive = this.minuteNoReceive();
-      this.isHalfAnHourNoReceive = this.halfAnHourNoReceive();
-      this.messageAge = this.messageAgeCalculator();
+      if (this.Message(this.topic) != null) {
+        this.isMinuteNoReceive = this.minuteNoReceive();
+        this.isHalfAnHourNoReceive = this.halfAnHourNoReceive();
+        this.messageAge = this.messageAgeCalculator();
+      }
     }, 500);
   },
   computed: {
@@ -143,7 +137,7 @@ export default {
 tr {
   td {
     padding: 0px 5px !important;
-	line-height: 1.5;
+    line-height: 1.5;
   }
 }
 </style>

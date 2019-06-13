@@ -3,9 +3,9 @@ import store from '../store';
 
 export default class MQTT {
 
-	constructor(broker, options){
+	constructor(broker, options, topic){
 		
-		this._topic = options.topic;
+		this._topic = topic;
 		this._client = mqtt.connect(broker, options);
 		this.connect();
 		this.listen();
@@ -14,18 +14,14 @@ export default class MQTT {
 
 	connect(){
 		this._client.on("connect", () => {
-			console.log("Connected to MQTTBroker");
 			this._client.subscribe("tele/" + this._topic + "/SENSOR");
 		});
 	}
 
 	listen(){
 		this._client.on("message", (topic, message) => {
-			// console.log(message.toString());
 			let newMessage = JSON.parse(message.toString())
 			newMessage["topic"] = this._topic;
-
-			// console.log(newMessage);
 			
 			let storeMessage = this.findMessage();
 
