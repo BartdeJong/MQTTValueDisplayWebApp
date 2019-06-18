@@ -12,10 +12,9 @@ export default {
       time: null
     };
   },
-  methods: {},
-  created() {
-    setInterval(() => {
-			var today = new Date();
+  methods: {
+    setTime() {
+      var today = new Date();
 			let hourFiller = "";
 			let minuteFiller = "";
 			if(today.getHours() < 10)
@@ -23,6 +22,12 @@ export default {
 			if(today.getMinutes() < 10)
 				minuteFiller = "0";
       this.time = hourFiller + today.getHours() + ":" + minuteFiller + today.getMinutes();
+    }
+  },
+  created() {
+    this.setTime();
+    setInterval(() => {
+			this.setTime();
     }, 10000);
   }
 };

@@ -1,10 +1,16 @@
 <template>
   <ion-card class="forecast" v-if="forecast != null">
-    <ion-subtitle class="location">
-      {{forecast.location.name}}
-    </ion-subtitle>
     <table class="centered">
       <thead class="gray">
+        <tr>
+          <th class="reload" @click="getForecast">
+            <ion-icon class="reload" name="refresh" size="large"></ion-icon>
+          </th>
+          <th class="reload">
+            <ion-subtitle class="location">{{forecast.location.name}}</ion-subtitle>
+          </th>
+          <th class="reload"></th>
+        </tr>
         <tr>
           <th>Day</th>
           <th>Temperature</th>
@@ -76,11 +82,11 @@ export default {
   background-color: #2a2a2a;
   font-size: large;
 
-  thead{
-	  line-height: 1.2;
+  thead {
+    line-height: 1.2;
   }
 
-  th{
+  th {
     padding-top: 8px;
     padding-bottom: 8px;
   }
@@ -106,12 +112,19 @@ export default {
 
 img.resize {
   padding-left: 17%;
-  max-width:80%;
-  max-height:80%;
+  max-width: 80%;
+  max-height: 80%;
 }
 
-.location{
+.location {
   font-size: x-large;
   color: rgb(182, 182, 182);
+}
+
+.reload {
+  padding: 2px;
+  line-height: 0;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
 }
 </style>
