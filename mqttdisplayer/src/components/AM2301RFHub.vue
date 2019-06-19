@@ -49,7 +49,7 @@ export default {
       return string;
     },
     temperatureFromMessage(message) {
-      return message.payload;
+      return message.payload.substring(0,4);
     },
     humidityFromMessage(message) {
       return message.payload;

@@ -3,13 +3,13 @@
     <table class="centered">
       <thead class="gray">
         <tr>
-          <th class="reload" @click="getForecast">
+          <th class="reload" @click="reloadForecast">
             <ion-icon class="reload" name="refresh" size="large"></ion-icon>
           </th>
           <th class="reload">
             <ion-subtitle class="location">{{forecast.location.name}}</ion-subtitle>
           </th>
-          <th class="reload"></th>
+          <th class="reload">{{getForecastLoadTime()}}</th>
         </tr>
         <tr>
           <th>Day</th>
@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import { get } from 'http';
 export default {
   name: "forecast",
   data() {
@@ -64,6 +65,14 @@ export default {
           this.longitude +
           "&days=2"
       ).then(response => response.json());
+    },
+    reloadForecast() {
+      this.getForecast().then(response => {
+        this.forecast = response;
+      });
+    },
+    getForecastLoadTime() {
+      return this.forecast.location.localtime.match(/([0-5][0-9]):([0-5][0-9])/gm)[0];
     }
   },
   created() {
