@@ -22,7 +22,6 @@ export default new Vuex.Store({
 				state.messages.forEach(message => {
 
 				});
-				console.log(time);
 				return time;
 			}
 			else {

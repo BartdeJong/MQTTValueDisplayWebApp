@@ -8,8 +8,8 @@
       <div>{{mqttName}}</div>
       <div v-if="isMinuteNoReceive">{{messageAge}}</div>
     </td>
-    <td class="largeText">{{Message(topic).AM2301.Temperature}} &#8451;</td>
-    <td class="largeText">{{Message(topic).AM2301.Humidity}} %</td>
+    <td class="largeText">{{temperatureFromMessage(Message(topic))}} &#8451;</td>
+    <td class="largeText">{{humidityFromMessage(Message(topic))}} %</td>
   </tr>
   <tr v-else class="notFound">
     <td>{{mqttName}}</td>
@@ -24,14 +24,13 @@ import { mapGetters } from "vuex";
 
 export default {
   name: "AM2301",
-  props: ["topic", "mqttName"],
+  props: ["topic", "mqttName", "broker"],
   data() {
     return {
       isMinuteNoReceive: false,
       isHalfAnHourNoReceive: false,
       messageAge: 0,
       mqtt: null,
-      broker: "wss://broker.0f.nl:8084/",
       options: {
         rejectUnauthorized: false,
         clientId: this.getRandomClientId()
@@ -105,6 +104,12 @@ export default {
         secondFiller +
         seconds
       );
+    },
+    temperatureFromMessage(message) {
+      return JSON.parse(message.payload).AM2301.Temperature;
+    },
+    humidityFromMessage(message) {
+      return JSON.parse(message.payload).AM2301.Humidity;
     }
   }
 };

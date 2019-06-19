@@ -14,10 +14,22 @@
             </tr>
           </thead>
           <tbody>
-            <AM2301 :topic="'wemosd1'" :mqttName="'Slaapkamer'"></AM2301>
-            <AM2301 :topic="'buiten'" :mqttName="'Buiten'"></AM2301>
-            <AM2301 :topic="'tuinkamer'" :mqttName="'Tuinkamer'"></AM2301>
-            <!-- <AM2301 :topic="'Test3'"></AM2301> -->
+            <AM2301Tasmota
+              :topic="'tele/wemosd1/SENSOR'"
+              :mqttName="'Slaapkamer'"
+              :broker="'wss://broker.0f.nl:8084/'"
+            ></AM2301Tasmota>
+            <AM2301Tasmota :topic="'tele/buiten/SENSOR'" :mqttName="'Buiten'" :broker="'wss://broker.0f.nl:8084/'"></AM2301Tasmota>
+            <AM2301Tasmota
+              :topic="'tele/tuinkamer/SENSOR'"
+              :mqttName="'Tuinkamer'"
+              :broker="'wss://broker.0f.nl:8084/'"
+            ></AM2301Tasmota>
+            <AM2301RFHub
+              :topic="'rfhub/sensor/0/2'"
+              :mqttName="'RFHub'"
+              :broker="'wss://broker.0f.nl:8084/'"
+            ></AM2301RFHub>
           </tbody>
         </table>
       </ion-card>
@@ -29,7 +41,8 @@
 import NoSleep from "nosleep.js";
 import MQTT from "@/components/mqtt";
 import { mapGetters } from "vuex";
-import AM2301 from "@/components/AM2301.vue";
+import AM2301Tasmota from "@/components/AM2301Tasmota.vue";
+import AM2301RFHub from "@/components/AM2301RFHub";
 import problem from "@/components/problem.vue";
 import clock from "@/components/clock.vue";
 import forecast from "@/components/forecast.vue";
@@ -57,7 +70,8 @@ export default {
     ...mapGetters(["Message", "lastMessageTime"])
   },
   components: {
-    AM2301,
+    AM2301Tasmota,
+    AM2301RFHub,
     problem,
     clock,
     forecast
