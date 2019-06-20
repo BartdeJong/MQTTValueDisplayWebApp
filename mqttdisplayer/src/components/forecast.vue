@@ -4,7 +4,7 @@
 			<thead class="gray">
 				<tr>
 					<th class="reload" @click="reloadForecast">
-						<ion-icon class="reload" name="refresh" size="large"></ion-icon>
+						<ion-icon class="reload reload-animation" id="reloadIcon" name="refresh" size="large"></ion-icon>
 					</th>
 					<th class="reload">
 						<ion-subtitle class="location">{{forecast.location.name}}</ion-subtitle>
@@ -67,17 +67,29 @@ export default {
 			).then(response => response.json());
 		},
 		reloadForecast() {
+			document.getElementById(
+				"reloadIcon"
+			).style.webkitAnimationPlayState = "running";
 			this.getForecast().then(response => {
 				this.forecast = response;
+				setTimeout(() => {
+					document.getElementById(
+						"reloadIcon"
+					).style.webkitAnimationPlayState = "paused";
+				}, 1000);
 			});
 		},
 		getForecastLoadTime() {
 			let date = new Date(this.forecast.location.localtime);
 			let hours = date.getHours();
-			let minutes = date.getMinutes();
+			let minutes = this.shouldAddZero(date.getMinutes());
 			return hours + ":" + minutes;
+		},
+		shouldAddZero(minutes) {
+			return minutes < 10 ? "0" + minutes : minutes;
 		}
 	},
+
 	created() {
 		navigator.geolocation.getCurrentPosition(this.success);
 		setInterval(() => {
@@ -85,6 +97,11 @@ export default {
 				this.forecast = response;
 			});
 		}, 600000);
+		setTimeout(() => {
+			document.getElementById(
+				"reloadIcon"
+			).style.webkitAnimationPlayState = "paused";
+		}, 1000);
 	}
 };
 </script>
@@ -138,5 +155,18 @@ img.resize {
 	line-height: 0;
 	padding-top: 2px !important;
 	padding-bottom: 2px !important;
+
+	&.reload-animation {
+		animation: rotate 1s infinite linear;
+	}
+}
+
+@keyframes rotate {
+	0% {
+		transform: rotateZ(0);
+	}
+	100% {
+		transform: rotateZ(360deg);
+	}
 }
 </style>
