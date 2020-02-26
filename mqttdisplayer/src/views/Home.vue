@@ -14,11 +14,11 @@
 						</tr>
 					</thead>
 					<tbody>
-						<AM2301Tasmota
+						<IBMWatson
 							:topic="'tele/wemosd1/SENSOR'"
 							:mqttName="'Slaapkamer'"
 							:broker="'wss://broker.0f.nl:8084/'"
-						></AM2301Tasmota>
+						></IBMWatson>
 						<AM2301Tasmota
 							:topic="'tele/buiten/SENSOR'"
 							:mqttName="'Buiten'"
@@ -47,6 +47,7 @@ import MQTT from "@/components/mqtt";
 import { mapGetters } from "vuex";
 import AM2301Tasmota from "@/components/AM2301Tasmota.vue";
 import AM2301RFHub from "@/components/AM2301RFHub";
+import IBMWatson from "@/components/IBMWatson";
 import problem from "@/components/problem.vue";
 import clock from "@/components/clock.vue";
 import forecast from "@/components/forecast.vue";
@@ -76,6 +77,7 @@ export default {
 	components: {
 		AM2301Tasmota,
 		AM2301RFHub,
+		IBMWatson,
 		problem,
 		clock,
 		forecast
