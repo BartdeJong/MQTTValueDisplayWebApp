@@ -1,16 +1,16 @@
 <template>
 	<tr
-		v-if="'hello' != null"
+		v-if="jsonResponse != null"
 		class="found"
 	>
 		<td>
-			<div>{{mqttName}}</div>
+			<div>{{name}}</div>
 		</td>
 		<td class="largeText">{{jsonResponse.temperature}} &#8451;</td>
 		<td class="largeText">{{jsonResponse.humidity}} %</td>
 	</tr>
 	<tr v-else class="notFound">
-		<td>{{mqttName}}</td>
+		<td>{{name}}</td>
 		<td>not</td>
 		<td>found</td>
 	</tr>
@@ -21,27 +21,24 @@ import { mapGetters } from "vuex";
 
 export default {
 	name: "IBMWatson",
-	props: ["topic", "mqttName", "broker"],
+	props: ["name", "deviceId"],
 	data() {
 		return {
             jsonResponse: null
 		};
 	},
 	methods: {
-		getForecast() {
-			return fetch("https://eu-de.functions.cloud.ibm.com/api/v1/web/c01c2703-8b9c-4b17-a419-11091502a1e5/hello-world/TestPython.json",
+		getTempAndHum() {
+			return fetch('https://eu-de.functions.cloud.ibm.com/api/v1/web/c01c2703-8b9c-4b17-a419-11091502a1e5/hello-world/TestPython.json?device=' + this.deviceId
 			).then(response => response.json());
-		},
-		temperatureFromMessage(message) {
-			return JSON.parse(message.payload).AM2301.Temperature;
-		},
-		humidityFromMessage(message) {
-			return JSON.parse(message.payload).AM2301.Humidity;
 		}
     },
     created() {
+		this.getTempAndHum().then(response => {
+				this.jsonResponse = response;
+		});
 		setInterval(() => {
-			this.getForecast().then(response => {
+			this.getTempAndHum().then(response => {
 				this.jsonResponse = response;
 			});
 		}, 5000);

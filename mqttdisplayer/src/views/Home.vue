@@ -15,25 +15,9 @@
 					</thead>
 					<tbody>
 						<IBMWatson
-							:topic="'tele/wemosd1/SENSOR'"
-							:mqttName="'Slaapkamer'"
-							:broker="'wss://broker.0f.nl:8084/'"
+							:name="'Slaapkamer'"
+							:deviceId="'koekblik'"
 						></IBMWatson>
-						<AM2301Tasmota
-							:topic="'tele/buiten/SENSOR'"
-							:mqttName="'Buiten'"
-							:broker="'wss://broker.0f.nl:8084/'"
-						></AM2301Tasmota>
-						<AM2301Tasmota
-							:topic="'tele/tuinkamer/SENSOR'"
-							:mqttName="'Tuinkamer'"
-							:broker="'wss://broker.0f.nl:8084/'"
-						></AM2301Tasmota>
-						<AM2301RFHub
-							:topic="'rfhub/sensor/0/2'"
-							:mqttName="'RFHub'"
-							:broker="'wss://broker.0f.nl:8084/'"
-						></AM2301RFHub>
 					</tbody>
 				</table>
 			</ion-card>
