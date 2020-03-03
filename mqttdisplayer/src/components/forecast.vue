@@ -40,11 +40,13 @@
         </tr>
       </tbody>
     </table>
+    <canvas id="line-chart" width="800" height="150"></canvas>
   </ion-card>
 </template>
 
 <script>
 import { get } from "http";
+import Chart from "chart.js";
 export default {
   name: "forecast",
   data() {
@@ -52,7 +54,8 @@ export default {
       latitude: null,
       longitude: null,
 	    forecast: null,
-	    reloadTime: null
+      reloadTime: null,
+      rainData: null
     };
   },
   methods: {
@@ -63,6 +66,9 @@ export default {
       this.getForecast().then(response => {
         this.forecast = response;
       });
+      fetch("https://gpsgadget.buienradar.nl/data/raintext/?lat=" + this.latitude + "&lon=" + this.longitude)
+      .then(response => response.text())
+      .then(response => this.rainData = response)
     },
     getForecast() {
 	  this.reloadTime = this.getForecastLoadTime()
@@ -95,6 +101,22 @@ export default {
         today.push(hour.main.temp)
       )
       return Math.max(...today)
+    },
+    getRainData() {
+      if(this.rainData != null){
+        let rain = this.rainData.split(/\r\n/)
+        rain.pop()
+        let rainArray = []
+        for(let value in rain){
+          var calculated = Math.pow(10,(( parseFloat(rain[value].substr(0,3))-109)/32))
+          if(calculated > 0.01){
+            rain[value] = calculated
+          } else {
+            rain[value] = 0
+          }
+        }
+        return rain
+      }
     }
   },
   created() {
@@ -108,6 +130,33 @@ export default {
       document.getElementById("reloadIcon").style.webkitAnimationPlayState =
         "paused";
     }, 1000);
+    setTimeout(() => {
+      new Chart(document.getElementById("line-chart"), {
+        type: 'line',
+        data: {
+          labels: ["now","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","+2 hours"],
+          datasets: [{ 
+              data: this.getRainData(),
+              borderColor: "#3e95cd",
+              fill: true
+            }
+          ]
+        },
+        options: {
+          legend: false,
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      beginAtZero: true
+                  }
+              }],
+              xAxes: [{
+                display: false
+            }]
+          }
+        }
+      })
+    }, 2000);
   }
 };
 </script>
