@@ -38,7 +38,7 @@ export default {
 
 <style lang="scss">
 .clock {
-	background-color: #2a2a2a;
+	background-color: #171717;
 }
 
 .clockText {

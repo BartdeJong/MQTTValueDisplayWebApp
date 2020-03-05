@@ -163,7 +163,7 @@ export default {
 
 <style lang="scss" scoped>
 .forecast {
-  background-color: #2a2a2a;
+  background-color: #171717;
   font-size: large;
 
   thead {
@@ -182,7 +182,7 @@ export default {
 }
 
 .gray {
-  background-color: #313131;
+  background-color: #232323;
   color: #a8a8a8;
 }
 

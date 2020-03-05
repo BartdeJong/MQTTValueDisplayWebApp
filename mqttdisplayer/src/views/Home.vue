@@ -89,7 +89,7 @@ export default {
 }
 
 .gray {
-	background-color: #313131;
+	background-color: #171717;
 	color: #a8a8a8;
 }
 

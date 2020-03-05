@@ -48,12 +48,12 @@ export default {
 
 <style lang="scss">
 .notFound {
-	background-color: #313131;
+	background-color: #171717;
 	color: #ee8484;
 }
 
 .found {
-	background-color: #313131;
+	background-color: #171717;
 	color: #8ce265;
 	font-weight: bold;
 }
