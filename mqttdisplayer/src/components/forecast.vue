@@ -85,6 +85,10 @@ export default {
           document.getElementById("reloadIcon").style.webkitAnimationPlayState = "paused";
 		}, 1000);
       });
+      fetch("https://gpsgadget.buienradar.nl/data/raintext/?lat=" + this.latitude + "&lon=" + this.longitude)
+      .then(response => response.text())
+      .then(response => this.rainData = response)
+      this.refreshRainGraph();
     },
     getForecastLoadTime() {
       let date = new Date();
@@ -117,20 +121,8 @@ export default {
         }
         return rain
       }
-    }
-  },
-  created() {
-    navigator.geolocation.getCurrentPosition(this.success);
-    setInterval(() => {
-      this.getForecast().then(response => {
-        this.forecast = response;
-      });
-    }, 3600000);
-    setTimeout(() => {
-      document.getElementById("reloadIcon").style.webkitAnimationPlayState =
-        "paused";
-    }, 1000);
-    setTimeout(() => {
+    },
+    refreshRainGraph() {
       new Chart(document.getElementById("line-chart"), {
         type: 'line',
         data: {
@@ -156,7 +148,24 @@ export default {
           }
         }
       })
-    }, 2000);
+    }
+  },
+  created() {
+    navigator.geolocation.getCurrentPosition(this.success);
+    setInterval(() => {
+      this.getForecast().then(response => {
+        this.forecast = response;
+      });
+    }, 3600000);
+    setTimeout(() => {
+      document.getElementById("reloadIcon").style.webkitAnimationPlayState =
+        "paused";
+    }, 1000);
+  },
+  mounted() {
+    setTimeout(() => {
+      this.refreshRainGraph();
+    }, 500)
   }
 };
 </script>

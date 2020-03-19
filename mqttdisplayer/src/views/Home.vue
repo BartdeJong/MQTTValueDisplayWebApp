@@ -22,6 +22,10 @@
 							:name="'Woonkamer'"
 							:deviceId="'1'"
 						></IBMWatson>
+						<IBMWatson
+							:name="'Buiten'"
+							:deviceId="'Buiten'"
+						></IBMWatson>
 					</tbody>
 				</table>
 			</ion-card>
