@@ -15,16 +15,16 @@
 					</thead>
 					<tbody>
 						<IBMWatson
-							:name="'Slaapkamer'"
-							:deviceId="'koekblik'"
-						></IBMWatson>
-						<IBMWatson
 							:name="'Woonkamer'"
-							:deviceId="'1'"
+							:deviceId="'Woonkamer'"
 						></IBMWatson>
 						<IBMWatson
-							:name="'Buiten'"
-							:deviceId="'Buiten'"
+							:name="'Kantoor Bart'"
+							:deviceId="'Kantoor Bart'"
+						></IBMWatson>
+						<IBMWatson
+							:name="'Kantoor Sjoukje'"
+							:deviceId="'Kantoor Sjoukje'"
 						></IBMWatson>
 					</tbody>
 				</table>

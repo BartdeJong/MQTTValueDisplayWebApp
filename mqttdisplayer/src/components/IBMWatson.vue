@@ -29,7 +29,12 @@ export default {
 	},
 	methods: {
 		getTempAndHum() {
-			return fetch('https://eu-de.functions.cloud.ibm.com/api/v1/web/c01c2703-8b9c-4b17-a419-11091502a1e5/hello-world/TestPython.json?device=' + this.deviceId
+			const requestOptions = {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({"sensor_name": this.deviceId})
+			};
+			return fetch('https://bwlgkni215.execute-api.eu-central-1.amazonaws.com/default/read-temp-hum', requestOptions
 			).then(response => response.json());
 		}
     },
