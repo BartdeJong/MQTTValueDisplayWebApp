@@ -154,11 +154,6 @@ export default {
     }
   },
   created() {
-    // if (navigator.geolocation) {
-    //   navigator.geolocation.getCurrentPosition(this.success);
-    // } else {
-    //   document.write(iets)
-    // };
     navigator.geolocation.getCurrentPosition(this.success, this.onError);
     setInterval(() => {
       this.getForecast().then(response => {
