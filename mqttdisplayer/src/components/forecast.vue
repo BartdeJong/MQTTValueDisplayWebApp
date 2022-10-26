@@ -70,6 +70,9 @@ export default {
       .then(response => response.text())
       .then(response => this.rainData = response)
     },
+    onError(msg){
+      alert("Error location")
+    },
     getForecast() {
 	  this.reloadTime = this.getForecastLoadTime()
       return fetch(
@@ -77,12 +80,12 @@ export default {
       ).then(response => response.json());
     },
     reloadForecast() {
-      document.getElementById("reloadIcon").style.webkitAnimationPlayState =
+      document.getElementById("reloadIcon").style.animationPlayState =
         "running";
       this.getForecast().then(response => {
         this.forecast = response;
         setTimeout(() => {
-          document.getElementById("reloadIcon").style.webkitAnimationPlayState = "paused";
+          document.getElementById("reloadIcon").style.animationPlayState = "paused";
 		}, 1000);
       });
       fetch("https://gpsgadget.buienradar.nl/data/raintext/?lat=" + this.latitude + "&lon=" + this.longitude)
@@ -151,14 +154,19 @@ export default {
     }
   },
   created() {
-    navigator.geolocation.getCurrentPosition(this.success);
+    // if (navigator.geolocation) {
+    //   navigator.geolocation.getCurrentPosition(this.success);
+    // } else {
+    //   document.write(iets)
+    // };
+    navigator.geolocation.getCurrentPosition(this.success, this.onError);
     setInterval(() => {
       this.getForecast().then(response => {
         this.forecast = response;
       });
     }, 3600000);
     setTimeout(() => {
-      document.getElementById("reloadIcon").style.webkitAnimationPlayState =
+      document.getElementById("reloadIcon").style.animationPlayState =
         "paused";
     }, 1000);
   },
