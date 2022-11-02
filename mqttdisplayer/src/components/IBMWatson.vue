@@ -2,6 +2,7 @@
 	<tr
 		v-if="jsonResponse != null"
 		class="found"
+		:class="{'elevenMinuteNotReceiving': isElevenMinuteNoReceive, 'halfAnHourNotReceiving': isHalfAnHourNoReceive}"
 	>
 		<td>
 			<div>{{name}}</div>
@@ -24,6 +25,8 @@ export default {
 	props: ["name", "deviceId"],
 	data() {
 		return {
+			isElevenMinuteNoReceive: false,
+			isHalfAnHourNoReceive: false,
             jsonResponse: null
 		};
 	},
@@ -36,6 +39,26 @@ export default {
 			};
 			return fetch('https://bwlgkni215.execute-api.eu-central-1.amazonaws.com/default/read-temp-hum', requestOptions
 			).then(response => response.json());
+		},
+		minuteNoReceive() {
+			if (
+				Date.now() -
+					Date.parse(this.jsonResponse.date_time2) - 3600000 -
+					660000 >
+				0
+			)
+				return true;
+			else return false;
+		},
+		halfAnHourNoReceive() {
+			if (
+				Date.now() -
+					Date.parse(this.jsonResponse.date_time2) - 3600000 -
+					1800000 >
+				0
+			)
+				return true;
+			else return false;
 		}
     },
     created() {
@@ -45,6 +68,8 @@ export default {
 		setInterval(() => {
 			this.getTempAndHum().then(response => {
 				this.jsonResponse = response;
+				this.isElevenMinuteNoReceive = this.minuteNoReceive();
+				this.isHalfAnHourNoReceive = this.halfAnHourNoReceive();
 			});
 		}, 5000);
 	}
@@ -67,7 +92,7 @@ export default {
 	font-size: xx-large;
 }
 
-.minuteNotReceiving {
+.elevenMinuteNotReceiving {
 	color: rgb(255, 238, 0);
 }
 

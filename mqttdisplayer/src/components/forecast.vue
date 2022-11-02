@@ -132,7 +132,7 @@ export default {
           labels: ["now","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","+2 hours"],
           datasets: [{ 
               data: this.getRainData(),
-              borderColor: "#3e95cd",
+              borderColor: "lightblue",
               fill: true
             }
           ]
@@ -186,6 +186,10 @@ export default {
     padding-top: 8px;
     padding-bottom: 8px;
   }
+}
+
+.line-chart.line {
+  background-color: blue;
 }
 
 .text {
