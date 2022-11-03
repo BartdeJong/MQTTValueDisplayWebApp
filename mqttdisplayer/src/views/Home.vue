@@ -26,6 +26,10 @@
 							:name="'Kantoor Sjoukje'"
 							:deviceId="'Kantoor Sjoukje'"
 						></IBMWatson>
+						<IBMWatson
+							:name="'Buiten'"
+							:deviceId="'Buiten'"
+						></IBMWatson>
 					</tbody>
 				</table>
 			</ion-card>
