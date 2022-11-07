@@ -30,6 +30,14 @@
 							:name="'Buiten'"
 							:deviceId="'Buiten'"
 						></IBMWatson>
+						<IBMWatson
+							:name="'Slaapkamer'"
+							:deviceId="'Slaapkamer'"
+						></IBMWatson>
+						<IBMWatson
+							:name="'Printer'"
+							:deviceId="'Printer'"
+						></IBMWatson>
 					</tbody>
 				</table>
 			</ion-card>
