@@ -1,47 +1,44 @@
 <template>
-	<div class="move">
-		<div class="home darkest">
-			<problem/>
-			<clock/>
-			<forecast/>
-			<ion-card class="sizeUp">
-				<table class="centered">
-					<thead class="gray">
-						<tr>
-							<th>Location</th>
-							<th>Temperature</th>
-							<th>Humidity</th>
-						</tr>
-					</thead>
-					<tbody>
-						<IBMWatson
-							:name="'Woonkamer'"
-							:deviceId="'Woonkamer'"
-						></IBMWatson>
-						<IBMWatson
-							:name="'Kantoor Bart'"
-							:deviceId="'Kantoor Bart'"
-						></IBMWatson>
-						<IBMWatson
-							:name="'Kantoor Sjoukje'"
-							:deviceId="'Kantoor Sjoukje'"
-						></IBMWatson>
-						<IBMWatson
-							:name="'Buiten'"
-							:deviceId="'Buiten'"
-						></IBMWatson>
-						<IBMWatson
-							:name="'Slaapkamer'"
-							:deviceId="'Slaapkamer'"
-						></IBMWatson>
-						<IBMWatson
-							:name="'Printer'"
-							:deviceId="'Printer'"
-						></IBMWatson>
-					</tbody>
-				</table>
-			</ion-card>
-		</div>
+	<div class="home darkest">
+		<clock/>
+		<forecast/>
+		<ion-card class="sizeUp">
+			<table class="centered">
+				<thead class="gray">
+					<tr>
+						<th>Location</th>
+						<th>Temperature</th>
+						<th>Humidity</th>
+					</tr>
+				</thead>
+				<tbody>
+					<IBMWatson
+						:name="'Woonkamer'"
+						:deviceId="'Woonkamer'"
+					></IBMWatson>
+					<IBMWatson
+						:name="'Kantoor Bart'"
+						:deviceId="'Kantoor Bart'"
+					></IBMWatson>
+					<IBMWatson
+						:name="'Kantoor Sjoukje'"
+						:deviceId="'Kantoor Sjoukje'"
+					></IBMWatson>
+					<IBMWatson
+						:name="'Buiten'"
+						:deviceId="'Buiten'"
+					></IBMWatson>
+					<IBMWatson
+						:name="'Slaapkamer'"
+						:deviceId="'Slaapkamer'"
+					></IBMWatson>
+					<IBMWatson
+						:name="'Printer'"
+						:deviceId="'Printer'"
+					></IBMWatson>
+				</tbody>
+			</table>
+		</ion-card>
 	</div>
 </template>
 
