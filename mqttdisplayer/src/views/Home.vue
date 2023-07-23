@@ -1,125 +1,142 @@
 <template>
 	<div class="home darkest">
-		<clock/>
-		<forecast/>
-		<ion-card class="sizeUp">
-			<table class="centered">
-				<thead class="gray">
-					<tr>
-						<th>Location</th>
-						<th>Temperature</th>
-						<th>Humidity</th>
-					</tr>
-				</thead>
-				<tbody>
-					<IBMWatson
-						:name="'Woonkamer'"
-						:deviceId="'Woonkamer'"
-					></IBMWatson>
-					<IBMWatson
-						:name="'Kantoor Bart'"
-						:deviceId="'Kantoor Bart'"
-					></IBMWatson>
-					<IBMWatson
-						:name="'Kantoor Sjoukje'"
-						:deviceId="'Kantoor Sjoukje'"
-					></IBMWatson>
-					<IBMWatson
-						:name="'Buiten'"
-						:deviceId="'Buiten'"
-					></IBMWatson>
-					<IBMWatson
-						:name="'Slaapkamer'"
-						:deviceId="'Slaapkamer'"
-					></IBMWatson>
-					<IBMWatson
-						:name="'Printer'"
-						:deviceId="'Printer'"
-					></IBMWatson>
-				</tbody>
-			</table>
-		</ion-card>
+	  <history :sensor-name="sensorNameValue" />
+	  <ion-card class="sizeUp">
+		<div class="table-container">
+		  <table class="centered">
+			<thead class="gray">
+			  <tr>
+				<th>Location</th>
+				<th>Temperature</th>
+				<th>Humidity</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <IBMWatson
+				v-for="location in locations"
+				:key="location.deviceId"
+				@ibmwatson-clicked="handleIBMWatsonClicked"
+				:name="location.name"
+				:deviceId="location.deviceId"
+			  />
+			</tbody>
+		  </table>
+		</div>
+	  </ion-card>
 	</div>
-</template>
-
-<script>
-import NoSleep from "nosleep.js";
-import MQTT from "@/components/mqtt";
-import { mapGetters } from "vuex";
-import AM2301Tasmota from "@/components/AM2301Tasmota.vue";
-import AM2301RFHub from "@/components/AM2301RFHub";
-import IBMWatson from "@/components/IBMWatson";
-import problem from "@/components/problem.vue";
-import clock from "@/components/clock.vue";
-import forecast from "@/components/forecast.vue";
-import { Promise } from "q";
-import { setInterval } from "timers";
-
-var noSleep = new NoSleep();
-document.addEventListener(
+  </template>
+  
+  <script>
+  import NoSleep from "nosleep.js";
+  import { mapGetters } from "vuex";
+  import IBMWatson from "@/components/IBMWatson";
+  import problem from "@/components/problem.vue";
+  import forecast from "@/components/forecast.vue";
+  import history from "@/components/history.vue";
+  
+  var noSleep = new NoSleep();
+  document.addEventListener(
 	"click",
 	function enableNoSleep() {
-		document.removeEventListener("click", enableNoSleep, false);
-		noSleep.enable();
+	  document.removeEventListener("click", enableNoSleep, false);
+	  noSleep.enable();
 	},
 	false
-);
-
-export default {
+  );
+  
+  export default {
 	name: "home",
 	data() {
-		return {
-			isOnline: false
-		};
+	  return {
+		isOnline: false,
+		sensorNameValue: "Kantoor Bart",
+		locations: [
+		  { name: "Woonkamer", deviceId: "Woonkamer" },
+		  { name: "Kantoor Bart", deviceId: "Kantoor Bart" },
+		  { name: "Kantoor Sjoukje", deviceId: "Kantoor Sjoukje" },
+		  { name: "Buiten", deviceId: "Buiten" },
+		  { name: "Slaapkamer", deviceId: "Slaapkamer" },
+		  { name: "Printer", deviceId: "Printer" },
+		],
+	  };
 	},
 	computed: {
-		...mapGetters(["Message", "lastMessageTime"])
+	  ...mapGetters(["Message", "lastMessageTime"]),
 	},
 	components: {
-		AM2301Tasmota,
-		AM2301RFHub,
-		IBMWatson,
-		problem,
-		clock,
-		forecast
-	}
-};
-</script>
-
-<style lang="scss">
-.sizeUp {
+	  IBMWatson,
+	  problem,
+	  forecast,
+	  history,
+	},
+	methods: {
+	  // Update the sensorNameValue when an IBMWatson component is clicked
+	  handleIBMWatsonClicked(deviceId) {
+		this.sensorNameValue = deviceId;
+	  },
+	},
+  };
+  </script>
+  
+  <style lang="scss">
+  .sizeUp {
 	font-size: large;
 	line-height: 0.5;
-
-	thead {
-		line-height: 1.2;
-	}
-
-	th {
-		padding-top: 8px;
-		padding-bottom: 8px;
-	}
-}
-
-.gray {
+	overflow-x: auto;
+  }
+  
+  table {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+  }
+  
+  th,
+  td {
+	padding: 12px;
+	text-align: left;
+	word-wrap: break-word;
+  }
+  
+  th {
 	background-color: #171717;
 	color: #a8a8a8;
-}
-
-@keyframes example {
+  }
+  
+  tr:hover {
+	background-color: #ddd;
+  }
+  
+  .gray {
+	background-color: #171717;
+	color: #a8a8a8;
+  }
+  
+  /* Additional styles for mobile responsiveness */
+  .table-container {
+	overflow-x: auto;
+  }
+  
+  @media (max-width: 600px) {
+	.sizeUp {
+	  font-size: medium;
+	}
+  }
+  
+  @keyframes example {
 	0% {
-		transform: translate(0px, 0%);
+	  transform: translate(0px, 0%);
 	}
 	50% {
-		transform: translate(0px, 5%);
+	  transform: translate(0px, 5%);
 	}
 	100% {
-		transform: translate(0px, 0%);
+	  transform: translate(0px, 0%);
 	}
-}
-
-.move {
+  }
+  
+  .move {
 	animation: example 3600s infinite;
-	// animation-duration: 10s infinite;
-}
-</style>
+  }
+  </style>
+  

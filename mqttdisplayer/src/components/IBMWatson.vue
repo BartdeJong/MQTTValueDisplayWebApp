@@ -1,5 +1,6 @@
 <template>
 	<tr
+		@click="handleIBMWatsonClick"
 		v-if="jsonResponse != null"
 		class="found"
 		:class="{'elevenMinuteNotReceiving': isElevenMinuteNoReceive, 'halfAnHourNotReceiving': isHalfAnHourNoReceive}"
@@ -41,25 +42,30 @@ export default {
 			).then(response => response.json());
 		},
 		minuteNoReceive() {
-			if (
-				Date.now() -
-					Date.parse(this.jsonResponse.date_time2) - 3600000 -
-					660000 >
-				0
-			)
+			const localTime = Date.now();
+			const utcDateTime2 = new Date(this.jsonResponse.date_time2);
+			const timezoneOffsetLocal = new Date().getTimezoneOffset() * 60 * 1000;
+			const timeDifference = localTime + timezoneOffsetLocal - utcDateTime2;
+			if (timeDifference - 660000 > 0) {
 				return true;
-			else return false;
+			} else {
+				return false;
+			}
 		},
 		halfAnHourNoReceive() {
-			if (
-				Date.now() -
-					Date.parse(this.jsonResponse.date_time2) - 3600000 -
-					1800000 >
-				0
-			)
+			const localTime = Date.now();
+			const utcDateTime2 = new Date(this.jsonResponse.date_time2);
+			const timezoneOffsetLocal = new Date().getTimezoneOffset() * 60 * 1000;
+			const timeDifference = localTime + timezoneOffsetLocal - utcDateTime2;
+			if (timeDifference - 1800000 > 0) {
 				return true;
-			else return false;
-		}
+			} else {
+				return false;
+			}
+		},
+		handleIBMWatsonClick() {
+			this.$eventBus.$emit('ibmwatson-clicked', this.deviceId);
+		},
     },
     created() {
 		this.getTempAndHum().then(response => {

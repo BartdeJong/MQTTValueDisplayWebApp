@@ -82,13 +82,19 @@ export default {
     reloadForecast() {
       document.getElementById("reloadIcon").style.animationPlayState =
         "running";
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({"sensor_name": 'Woonkamer',"record_amount": 24})
+      };
       this.getForecast().then(response => {
         this.forecast = response;
         setTimeout(() => {
           document.getElementById("reloadIcon").style.animationPlayState = "paused";
 		}, 1000);
       });
-      fetch("https://gpsgadget.buienradar.nl/data/raintext/?lat=" + this.latitude + "&lon=" + this.longitude)
+      // fetch("https://gpsgadget.buienradar.nl/data/raintext/?lat=" + this.latitude + "&lon=" + this.longitude)
+      fetch('https://ksmmf8pbj2.execute-api.eu-central-1.amazonaws.com/read-last-temps', requestOptions)
       .then(response => response.text())
       .then(response => this.rainData = response)
       this.refreshRainGraph();
@@ -115,7 +121,7 @@ export default {
         rain.pop()
         let rainArray = []
         for(let value in rain){
-          var calculated = Math.pow(10,(( parseFloat(rain[value].substr(0,3))-109)/32))
+          var calculated = parseFloat(rain[value].substr(0,2))//Math.pow(10,(( parseFloat(rain[value].substr(0,3))-109)/32))
           if(calculated > 0.01){
             rain[value] = calculated
           } else {
