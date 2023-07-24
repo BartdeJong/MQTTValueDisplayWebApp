@@ -1,6 +1,6 @@
 <template>
 	<div class="home darkest">
-	  <history :sensor-name="sensorNameValue" />
+	  <!-- <history :sensor-name="sensorNameValue" /> -->
 	  <ion-card class="sizeUp">
 		<div class="table-container">
 		  <table class="centered">
@@ -104,7 +104,7 @@
   }
   
   tr:hover {
-	background-color: #ddd;
+	background-color: #3d3d3d;
   }
   
   .gray {
@@ -121,22 +121,6 @@
 	.sizeUp {
 	  font-size: medium;
 	}
-  }
-  
-  @keyframes example {
-	0% {
-	  transform: translate(0px, 0%);
-	}
-	50% {
-	  transform: translate(0px, 5%);
-	}
-	100% {
-	  transform: translate(0px, 0%);
-	}
-  }
-  
-  .move {
-	animation: example 3600s infinite;
   }
   </style>
   

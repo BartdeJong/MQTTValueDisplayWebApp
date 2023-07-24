@@ -1,7 +1,7 @@
 <template>
   <ion-card class="history">
-    <h2 class="sensor-heading">{{ formattedSensorName }} Sensor</h2>
-    <canvas id="line-chart" width="800" height="150"></canvas>
+    <h2 class="sensor-heading">{{ formattedSensorName }}</h2>
+    <canvas :id="'line-chart-' + sensorName" width="800" height="150"></canvas>
   </ion-card>
 </template>
 
@@ -41,7 +41,7 @@ export default {
         this.refreshHistoryGraph();
       })
       .catch(error => {
-        alert("Error fetching history data");
+        alert("Error fetching history data" + error);
       });
     },
     getHistoryData() {
@@ -56,7 +56,10 @@ export default {
       }
     },
     refreshHistoryGraph() {
-      new Chart(document.getElementById("line-chart"), {
+      const canvasId = "line-chart-" + this.sensorName;
+      const canvasElement = document.getElementById(canvasId);
+
+      new Chart(canvasElement, {
         type: 'line',
         data: {
           labels: ["now","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","+2 hours"],
@@ -84,42 +87,25 @@ export default {
     }
   },
   created() {
-    eventBus.$on('ibmwatson-clicked', (sensorName) => {
-      this.sensorName = sensorName;
-      this.fetchHistoryData(sensorName);
+    eventBus.$on('ibmwatson-clicked' + this.deviceId, () => {
+      this.fetchHistoryData(this.sensorName);
     });
 
     setInterval(() => {
       this.fetchHistoryData(this.sensorName);
-    }, 10000);
-
-    setTimeout(() => {
-      document.getElementById("reloadIcon").style.animationPlayState =
-        "paused";
-    }, 1000);
+    }, 300000);
   },
   mounted() {
     this.fetchHistoryData(this.sensorName);
-    setTimeout(() => {
-      this.refreshHistoryGraph();
-    }, 500);
   }
 };
 </script>
 
 <style>
-@keyframes rotate {
-  0% {
-    transform: rotateZ(0);
-  }
-  100% {
-    transform: rotateZ(360deg);
-  }
-}
-
 .sensor-heading {
-  font-size: 1.5rem; /* Adjust the font size as needed */
-  padding: 5px; /* Adjust the padding as needed */
-  margin: 0; /* Remove any margin to reduce space */
+  font-size: 1.5rem;
+  padding: 5px;
+  margin: 0;
+  color: white;
 }
 </style>

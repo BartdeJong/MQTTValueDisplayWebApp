@@ -1,7 +1,7 @@
 <template>
 	<tr
 		@click="handleIBMWatsonClick"
-		v-if="jsonResponse != null"
+		v-if="jsonResponse != null & !showHistory"
 		class="found"
 		:class="{'elevenMinuteNotReceiving': isElevenMinuteNoReceive, 'halfAnHourNotReceiving': isHalfAnHourNoReceive}"
 	>
@@ -11,6 +11,14 @@
 		<td class="largeText">{{jsonResponse.temperature}} &#8451;</td>
 		<td class="largeText">{{jsonResponse.humidity}} %</td>
 	</tr>
+	<tr
+		v-else-if="showHistory"
+		@click="handleIBMWatsonClick"
+	>
+		<td colspan="3">
+			<history :sensor-name="deviceId"/>
+		</td>
+	</tr>
 	<tr v-else class="notFound">
 		<td>{{name}}</td>
 		<td>not</td>
@@ -19,7 +27,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import history from "@/components/history.vue";
 
 export default {
 	name: "IBMWatson",
@@ -28,7 +36,8 @@ export default {
 		return {
 			isElevenMinuteNoReceive: false,
 			isHalfAnHourNoReceive: false,
-            jsonResponse: null
+            jsonResponse: null,
+			showHistory: false,
 		};
 	},
 	methods: {
@@ -64,9 +73,15 @@ export default {
 			}
 		},
 		handleIBMWatsonClick() {
-			this.$eventBus.$emit('ibmwatson-clicked', this.deviceId);
+			this.showHistory = !this.showHistory;
+			if (this.showHistory) {
+				this.$eventBus.$emit("ibmwatson-clicked" + this.deviceId);
+			}
 		},
     },
+	components: {
+		history
+	},
     created() {
 		this.getTempAndHum().then(response => {
 				this.jsonResponse = response;
@@ -77,7 +92,7 @@ export default {
 				this.isElevenMinuteNoReceive = this.minuteNoReceive();
 				this.isHalfAnHourNoReceive = this.halfAnHourNoReceive();
 			});
-		}, 5000);
+		}, 120000);
 	}
 };
 </script>
