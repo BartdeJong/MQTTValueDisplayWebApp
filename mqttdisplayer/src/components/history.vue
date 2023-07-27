@@ -37,8 +37,10 @@ export default {
       fetch('https://ksmmf8pbj2.execute-api.eu-central-1.amazonaws.com/read-last-temps', requestOptions)
       .then(response => response.text())
       .then(response => {
-        this.historyData = response;
-        this.refreshHistoryGraph();
+        if (response.trim() !== '') {
+          this.historyData = response;
+          this.refreshHistoryGraph();
+        }
       })
       .catch(error => {
         alert("Error fetching history data" + error);
