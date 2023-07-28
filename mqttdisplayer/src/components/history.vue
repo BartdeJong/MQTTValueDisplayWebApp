@@ -67,7 +67,7 @@ export default {
           labels: ["now","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","+2 hours"],
           datasets: [{ 
               data: this.getHistoryData(),
-              borderColor: "lightblue",
+              borderColor: "#009879",
               fill: true
             }
           ]
@@ -108,6 +108,7 @@ export default {
   font-size: 1.5rem;
   padding: 5px;
   margin: 0;
-  color: white;
+  color: rgb(85, 85, 85);
+  text-align: center;
 }
 </style>

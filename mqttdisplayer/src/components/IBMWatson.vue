@@ -98,33 +98,11 @@ export default {
 </script>
 
 <style lang="scss">
-.notFound {
-	background-color: #171717;
-	color: #ee8484;
-}
-
-.found {
-	background-color: #171717;
-	color: #8ce265;
-	font-weight: bold;
-}
-
-.largeText {
-	font-size: xx-large;
-}
-
 .elevenMinuteNotReceiving {
 	color: rgb(255, 238, 0);
 }
 
 .halfAnHourNotReceiving {
 	color: orangered;
-}
-
-tr {
-	td {
-		padding: 0px 5px !important;
-		line-height: 1.5;
-	}
 }
 </style>

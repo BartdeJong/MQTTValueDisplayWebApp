@@ -3,10 +3,10 @@
 	  <!-- <history :sensor-name="sensorNameValue" /> -->
 	  <ion-card class="sizeUp">
 		<div class="table-container">
-		  <table class="centered">
-			<thead class="gray">
+		  <table class="styled-table">
+			<thead>
 			  <tr>
-				<th>Location</th>
+				<th>Name</th>
 				<th>Temperature</th>
 				<th>Humidity</th>
 			  </tr>
@@ -79,48 +79,61 @@
   </script>
   
   <style lang="scss">
+/* Additional styles for mobile responsiveness */
+.table-container {
+  overflow-x: auto;
+}
+
+@media (max-width: 600px) {
   .sizeUp {
-	font-size: large;
-	line-height: 0.5;
-	overflow-x: auto;
+    font-size: medium;
   }
-  
-  table {
-	width: 100%;
-	border-collapse: collapse;
-	table-layout: fixed;
-  }
-  
-  th,
-  td {
-	padding: 12px;
-	text-align: left;
-	word-wrap: break-word;
-  }
-  
-  th {
-	background-color: #171717;
-	color: #a8a8a8;
-  }
-  
-  tr:hover {
-	background-color: #3d3d3d;
-  }
-  
-  .gray {
-	background-color: #171717;
-	color: #a8a8a8;
-  }
-  
-  /* Additional styles for mobile responsiveness */
-  .table-container {
-	overflow-x: auto;
-  }
-  
-  @media (max-width: 600px) {
-	.sizeUp {
-	  font-size: medium;
-	}
-  }
-  </style>
-  
+}
+
+/* Styling the table */
+.styled-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+}
+
+/* Styling the header */
+.styled-table thead tr {
+  background-color: #009879;
+  color: #ffffff;
+  text-align: left;
+}
+
+/* Styling the table cells */
+.styled-table th,
+.styled-table td {
+  padding: 12px 15px;
+}
+
+/* Styling the table rows */
+.styled-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #ffffff;
+}
+
+.styled-table tbody tr:nth-of-type(odd) {
+  background-color: #f3f3f3e3;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+/* Styling the active row */
+.styled-table tbody tr.active-row {
+  font-weight: bold;
+  color: #009879;
+}
+</style>
