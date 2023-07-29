@@ -7,9 +7,11 @@ import Ionic from '@ionic/vue';
 import 'materialize-css';
 import 'materialize-css/dist/css/materialize.css';
 import { eventBus } from './eventBus.js';
+import Fragment from 'vue-fragment';
 
 Vue.config.productionTip = false;
 Vue.use(Ionic);
+Vue.use(Fragment.Plugin);
 
 // Create the Vue instance with the necessary configurations
 const app = new Vue({

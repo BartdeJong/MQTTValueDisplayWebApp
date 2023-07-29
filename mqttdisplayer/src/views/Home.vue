@@ -93,12 +93,13 @@
 /* Styling the table */
 .styled-table {
   border-collapse: collapse;
-  margin: 25px 0;
-  font-size: 0.9em;
+  margin: 1px 0;
+  font-size: 1.05em;
   font-family: sans-serif;
-  min-width: 400px;
+  min-width: 250px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   width: 100%;
+  overflow-x: hidden;
 }
 
 /* Styling the header */

@@ -1,34 +1,39 @@
 <template>
-	<tr
-		@click="handleIBMWatsonClick"
-		v-if="jsonResponse != null & !showHistory"
-		class="found"
-		:class="{'elevenMinuteNotReceiving': isElevenMinuteNoReceive, 'halfAnHourNotReceiving': isHalfAnHourNoReceive}"
-	>
-		<td>
-			<div>{{name}}</div>
-		</td>
-		<td class="largeText">{{jsonResponse.temperature}} &#8451;</td>
-		<td class="largeText">{{jsonResponse.humidity}} %</td>
-	</tr>
-	<tr
-		v-else-if="showHistory"
-		@click="handleIBMWatsonClick"
-	>
-		<td colspan="3">
-			<history :sensor-name="deviceId"/>
-		</td>
-	</tr>
-	<tr v-else class="notFound">
-		<td>{{name}}</td>
-		<td>not</td>
-		<td>found</td>
-	</tr>
+	<fragment>
+		<tr
+			@click="handleIBMWatsonClick"
+			v-if="jsonResponse != null"
+			class="found"
+			:class="{'elevenMinuteNotReceiving': isElevenMinuteNoReceive, 'halfAnHourNotReceiving': isHalfAnHourNoReceive}"
+		>
+			<td>
+				<div>{{name}}</div>
+			</td>
+			<td class="largeText">{{jsonResponse.temperature}} &#8451;</td>
+			<td class="largeText">{{jsonResponse.humidity}} %</td>
+		</tr>
+		<tr v-else class="notFound">
+			<td>{{name}}</td>
+			<td>not</td>
+			<td>found</td>
+		</tr>
+		<tr
+			v-if="showHistory"
+			@click="handleIBMWatsonClick"
+			class="no-padding"
+		>
+			<td
+				colspan="3"
+				class="no-padding"
+			>
+				<history :sensor-name="deviceId"/>
+			</td>
+		</tr>
+	</fragment>
 </template>
 
 <script>
 import history from "@/components/history.vue";
-
 export default {
 	name: "IBMWatson",
 	props: ["name", "deviceId"],
@@ -99,10 +104,17 @@ export default {
 
 <style lang="scss">
 .elevenMinuteNotReceiving {
-	color: rgb(255, 238, 0);
+  color: rgb(255, 238, 0);
 }
 
 .halfAnHourNotReceiving {
-	color: orangered;
+  color: orangered;
+}
+
+.no-padding {
+  padding: 0;
+  height: 0;
+  overflow: hidden;
+  transition: height 1.3s ease; /* Add the transition property */
 }
 </style>

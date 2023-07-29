@@ -1,7 +1,7 @@
 <template>
   <ion-card class="history">
     <h2 class="sensor-heading">{{ formattedSensorName }}</h2>
-    <canvas :id="'line-chart-' + sensorName" width="800" height="150"></canvas>
+    <canvas :id="'line-chart-' + sensorName" width="200" height="100"></canvas>
   </ion-card>
 </template>
 
@@ -43,7 +43,7 @@ export default {
         }
       })
       .catch(error => {
-        alert("Error fetching history data" + error);
+        console.log("Error fetching history data" + error);
       });
     },
     getHistoryData() {
