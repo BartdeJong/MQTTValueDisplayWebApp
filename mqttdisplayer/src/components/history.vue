@@ -1,5 +1,5 @@
 <template>
-  <ion-card class="history">
+  <ion-card class="history" @click="toggleData">
     <h2 class="sensor-heading">{{ formattedSensorName }}</h2>
     <canvas :id="'line-chart-' + sensorName" width="200" height="100"></canvas>
   </ion-card>
@@ -19,7 +19,9 @@ export default {
   },
   data() {
     return {
-      historyData: null
+      historicTempData: null,
+      historicHumData: null,
+      currentDataType: 'temperature'
     };
   },
   computed: {
@@ -28,7 +30,7 @@ export default {
     }
   },
   methods: {
-    fetchHistoryData(sensorName) {
+    fetchHistoricTempData(sensorName) {
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,7 +40,7 @@ export default {
       .then(response => response.text())
       .then(response => {
         if (response.trim() !== '') {
-          this.historyData = response;
+          this.historicTempData = response;
           this.refreshHistoryGraph();
         }
       })
@@ -46,14 +48,42 @@ export default {
         console.log("Error fetching history data" + error);
       });
     },
-    getHistoryData() {
-      if (this.historyData != null) {
-        let rain = this.historyData.split(/\r\n/);
-        rain.pop();
-        for (let value in rain) {
-          rain[value] = parseFloat(rain[value]);
+    gethistoricTempData() {
+      if (this.historicTempData != null) {
+        let data = this.historicTempData.split(/\r\n/);
+        data.pop();
+        for (let value in data) {
+          data[value] = parseFloat(data[value]);
         }
-        return rain;
+        return data;
+      }
+    },
+    fetchHistoricHumData(sensorName) {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({"sensor_name": sensorName, "record_amount": 288})
+      };
+      fetch('https://ksmmf8pbj2.execute-api.eu-central-1.amazonaws.com/read-last-hums', requestOptions)
+      .then(response => response.text())
+      .then(response => {
+        if (response.trim() !== '') {
+          this.historicHumData = response;
+          this.refreshHistoryGraph();
+        }
+      })
+      .catch(error => {
+        console.log("Error fetching history data" + error);
+      });
+    },
+    gethistoricHumData() {
+      if (this.historicHumData != null) {
+        let data = this.historicHumData.split(/\r\n/);
+        data.pop();
+        for (let value in data) {
+          data[value] = parseFloat(data[value]);
+        }
+        return data;
       }
     },
     refreshHistoryGraph() {
@@ -64,11 +94,13 @@ export default {
         type: 'line',
         data: {
           labels: ["now","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","now"],
-          datasets: [{ 
-              data: this.getHistoryData(),
-              borderColor: "#009879",
-              fill: true
-            }
+          datasets: [
+            { 
+              data: this.currentDataType == 'temperature' ? this.gethistoricTempData() : this.gethistoricHumData(),
+              borderColor: this.currentDataType == 'temperature' ? "#009879" : "#FF5C5C",
+              fill: true,
+              backgroundColor: this.currentDataType == 'temperature' ? "#0098791C" : "#FF5C5C1C"
+            },
           ]
         },
         options: {
@@ -90,19 +122,26 @@ export default {
           }
         }
       });
-    }
+    },
+    toggleData() {
+      this.currentDataType = this.currentDataType === 'temperature' ? 'humidity' : 'temperature';
+      this.refreshHistoryGraph();
+    },
   },
   created() {
     eventBus.$on('ibmwatson-clicked' + this.deviceId, () => {
-      this.fetchHistoryData(this.sensorName);
+      this.fetchHistoricTempData(this.sensorName);
+      this.fetchHistoricHumData(this.sensorName);
     });
 
     setInterval(() => {
-      this.fetchHistoryData(this.sensorName);
+      this.fetchHistoricTempData(this.sensorName);
+      this.fetchHistoricHumData(this.sensorName);
     }, 300000);
   },
   mounted() {
-    this.fetchHistoryData(this.sensorName);
+    this.fetchHistoricTempData(this.sensorName);
+    this.fetchHistoricHumData(this.sensorName);
   }
 };
 </script>

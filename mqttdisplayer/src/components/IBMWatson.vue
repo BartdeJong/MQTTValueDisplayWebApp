@@ -19,7 +19,6 @@
 		</tr>
 		<tr
 			v-if="showHistory"
-			@click="handleIBMWatsonClick"
 			class="no-padding"
 		>
 			<td
