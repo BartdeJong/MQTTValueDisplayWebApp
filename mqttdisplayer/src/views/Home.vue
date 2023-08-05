@@ -1,85 +1,82 @@
 <template>
 	<div class="home darkest">
-	  <!-- <history :sensor-name="sensorNameValue" /> -->
-	  <ion-card class="sizeUp">
-		<div class="table-container">
-		  <table class="styled-table">
-			<thead>
-			  <tr>
-				<th>Name</th>
-				<th>Temperature</th>
-				<th>Humidity</th>
-			  </tr>
-			</thead>
-			<tbody>
-			  <IBMWatson
-				v-for="location in locations"
-				:key="location.deviceId"
-				@ibmwatson-clicked="handleIBMWatsonClicked"
-				:name="location.name"
-				:deviceId="location.deviceId"
-			  />
-			</tbody>
-		  </table>
-		</div>
-	  </ion-card>
+		<ion-card class="sizeUp">
+			<div class="table-container">
+				<table class="styled-table">
+					<thead>
+					<tr>
+						<th>Locatie</th>
+						<th><img src="img/temperature.png" alt="Example Image" style="width: 47px; height: 47px;" class="centered-image"></th>
+						<th><img src="img/humidity.png" alt="Example Image" style="width: 47px; height: 47px;" class="centered-image"></th>
+					</tr>
+					</thead>
+					<tbody>
+					<IBMWatson
+						v-for="location in locations"
+						:key="location.deviceId"
+						@ibmwatson-clicked="handleIBMWatsonClicked"
+						:name="location.name"
+						:deviceId="location.deviceId"
+					/>
+					</tbody>
+				</table>
+			</div>
+		</ion-card>
 	</div>
-  </template>
+</template>
   
-  <script>
-  import NoSleep from "nosleep.js";
-  import { mapGetters } from "vuex";
-  import IBMWatson from "@/components/IBMWatson";
-  import problem from "@/components/problem.vue";
-  import forecast from "@/components/forecast.vue";
-  import history from "@/components/history.vue";
+<script>
+import NoSleep from "nosleep.js";
+import { mapGetters } from "vuex";
+import IBMWatson from "@/components/IBMWatson";
+import problem from "@/components/problem.vue";
+import forecast from "@/components/forecast.vue";
+import history from "@/components/history.vue";
+
+var noSleep = new NoSleep();
+document.addEventListener(
+"click",
+function enableNoSleep() {
+	document.removeEventListener("click", enableNoSleep, false);
+	noSleep.enable();
+},
+false
+);
+
+export default {
+name: "home",
+data() {
+	return {
+	isOnline: false,
+	sensorNameValue: "Kantoor Bart",
+	locations: [
+		{ name: "Woonkamer", deviceId: "Woonkamer" },
+		{ name: "Kantoor Bart", deviceId: "Kantoor Bart" },
+		{ name: "Kantoor Sjoukje", deviceId: "Kantoor Sjoukje" },
+		{ name: "Buiten", deviceId: "Buiten" },
+		{ name: "Slaapkamer", deviceId: "Slaapkamer" },
+		{ name: "Printer", deviceId: "Printer" },
+	],
+	};
+},
+computed: {
+	...mapGetters(["Message", "lastMessageTime"]),
+},
+components: {
+	IBMWatson,
+	problem,
+	forecast,
+	history,
+},
+methods: {
+	handleIBMWatsonClicked(deviceId) {
+	this.sensorNameValue = deviceId;
+	},
+},
+};
+</script>
   
-  var noSleep = new NoSleep();
-  document.addEventListener(
-	"click",
-	function enableNoSleep() {
-	  document.removeEventListener("click", enableNoSleep, false);
-	  noSleep.enable();
-	},
-	false
-  );
-  
-  export default {
-	name: "home",
-	data() {
-	  return {
-		isOnline: false,
-		sensorNameValue: "Kantoor Bart",
-		locations: [
-		  { name: "Woonkamer", deviceId: "Woonkamer" },
-		  { name: "Kantoor Bart", deviceId: "Kantoor Bart" },
-		  { name: "Kantoor Sjoukje", deviceId: "Kantoor Sjoukje" },
-		  { name: "Buiten", deviceId: "Buiten" },
-		  { name: "Slaapkamer", deviceId: "Slaapkamer" },
-		  { name: "Printer", deviceId: "Printer" },
-		],
-	  };
-	},
-	computed: {
-	  ...mapGetters(["Message", "lastMessageTime"]),
-	},
-	components: {
-	  IBMWatson,
-	  problem,
-	  forecast,
-	  history,
-	},
-	methods: {
-	  // Update the sensorNameValue when an IBMWatson component is clicked
-	  handleIBMWatsonClicked(deviceId) {
-		this.sensorNameValue = deviceId;
-	  },
-	},
-  };
-  </script>
-  
-  <style lang="scss">
-/* Additional styles for mobile responsiveness */
+<style lang="scss">
 .table-container {
   overflow-x: auto;
 }
@@ -136,5 +133,10 @@
 .styled-table tbody tr.active-row {
   font-weight: bold;
   color: #009879;
+}
+
+.centered-image {
+  display: block;
+  margin: 0 auto;
 }
 </style>

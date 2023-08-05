@@ -2,6 +2,7 @@
   <ion-card class="history" @click="toggleData">
     <h2 class="sensor-heading">{{ formattedSensorName }}</h2>
     <canvas :id="'line-chart-' + sensorName" width="200" height="100"></canvas>
+    <div class="data-type-overlay">{{ currentDataType }}</div>
   </ion-card>
 </template>
 
@@ -21,7 +22,7 @@ export default {
     return {
       historicTempData: null,
       historicHumData: null,
-      currentDataType: 'temperature'
+      currentDataType: 'Temperatuur'
     };
   },
   computed: {
@@ -96,10 +97,10 @@ export default {
           labels: ["now","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","now"],
           datasets: [
             { 
-              data: this.currentDataType == 'temperature' ? this.gethistoricTempData() : this.gethistoricHumData(),
-              borderColor: this.currentDataType == 'temperature' ? "#009879" : "#FF5C5C",
+              data: this.currentDataType == 'Temperatuur' ? this.gethistoricTempData() : this.gethistoricHumData(),
+              borderColor: this.currentDataType == 'Temperatuur' ? "#009879" : "#FF5C5C",
               fill: true,
-              backgroundColor: this.currentDataType == 'temperature' ? "#0098791C" : "#FF5C5C1C"
+              backgroundColor: this.currentDataType == 'Temperatuur' ? "#0098791C" : "#FF5C5C1C"
             },
           ]
         },
@@ -124,7 +125,7 @@ export default {
       });
     },
     toggleData() {
-      this.currentDataType = this.currentDataType === 'temperature' ? 'humidity' : 'temperature';
+      this.currentDataType = this.currentDataType === 'Temperatuur' ? 'Luchtvochtigheid' : 'Temperatuur';
       this.refreshHistoryGraph();
     },
   },
@@ -153,5 +154,18 @@ export default {
   margin: 0;
   color: rgb(85, 85, 85);
   text-align: center;
+}
+
+.data-type-overlay {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2rem;
+  background-color: rgba(255, 255, 255, 0.459);
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #333;
+  z-index: 2;
 }
 </style>

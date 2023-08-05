@@ -88,7 +88,9 @@ export default {
 	},
     created() {
 		this.getTempAndHum().then(response => {
+			if(response.message != 'Sensor not found') {
 				this.jsonResponse = response;
+			}
 		});
 		setInterval(() => {
 			this.getTempAndHum().then(response => {
