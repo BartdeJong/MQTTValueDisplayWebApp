@@ -11,17 +11,18 @@
 					</tr>
 					</thead>
 					<tbody>
-					<IBMWatson
-						v-for="location in locations"
-						:key="location.deviceId"
-						@ibmwatson-clicked="handleIBMWatsonClicked"
-						:name="location.name"
-						:deviceId="location.deviceId"
-					/>
+						<IBMWatson
+							v-for="location in locations"
+							:key="location.deviceId"
+							@ibmwatson-clicked="handleIBMWatsonClicked"
+							:name="location.name"
+							:deviceId="location.deviceId"
+						/>
 					</tbody>
 				</table>
 			</div>
 		</ion-card>
+		<button class="styled-button" @click="goToManageLocations">Beheer locaties</button>
 	</div>
 </template>
   
@@ -32,6 +33,8 @@ import IBMWatson from "@/components/IBMWatson";
 import problem from "@/components/problem.vue";
 import forecast from "@/components/forecast.vue";
 import history from "@/components/history.vue";
+import router from "@/router";
+import ManageLocations from "@/components/ManageLocations.vue";
 
 var noSleep = new NoSleep();
 document.addEventListener(
@@ -44,35 +47,62 @@ false
 );
 
 export default {
-name: "home",
-data() {
-	return {
-	isOnline: false,
-	sensorNameValue: "Kantoor Bart",
-	locations: [
-		{ name: "Woonkamer", deviceId: "Woonkamer" },
-		{ name: "Kantoor Bart", deviceId: "Kantoor Bart" },
-		{ name: "Kantoor Sjoukje", deviceId: "Kantoor Sjoukje" },
-		{ name: "Buiten", deviceId: "Buiten" },
-		{ name: "Slaapkamer", deviceId: "Slaapkamer" },
-		{ name: "Printer", deviceId: "Printer" },
-	],
-	};
-},
-computed: {
-	...mapGetters(["Message", "lastMessageTime"]),
-},
-components: {
-	IBMWatson,
-	problem,
-	forecast,
-	history,
-},
-methods: {
-	handleIBMWatsonClicked(deviceId) {
-	this.sensorNameValue = deviceId;
+	name: "home",
+	props: {
+      locations: {
+        type: Array,
+        default() { 
+			return [
+				{ name: "Woonkamer", deviceId: "Woonkamer" },
+				{ name: "Kantoor Bart", deviceId: "Kantoor Bart" },
+				{ name: "Kantoor Sjoukje", deviceId: "Kantoor Sjoukje" },
+				{ name: "Buiten", deviceId: "Buiten" },
+				{ name: "Slaapkamer", deviceId: "Slaapkamer" },
+				{ name: "Printer", deviceId: "Printer" },
+			]
+		},
+      },
+    },
+	data() {
+		return {
+			isOnline: false,
+			sensorNameValue: "Kantoor Bart",
+		};
 	},
-},
+	created() {
+		const locationsData = this.getCookie("locationsData");
+
+		if (locationsData !== null) {
+			this.locations = JSON.parse(locationsData);
+		}
+	},
+	computed: {
+		...mapGetters(["Message", "lastMessageTime"]),
+	},
+	components: {
+		IBMWatson,
+		problem,
+		forecast,
+		history,
+		ManageLocations,
+	},
+	methods: {
+		handleIBMWatsonClicked(deviceId) {
+			this.sensorNameValue = deviceId;
+		},
+		goToManageLocations() {
+			router.push({
+				name: "ManageLocations"
+			});
+		},
+		updateLocations(newLocations) {
+			this.locations = newLocations;
+		},
+		getCookie(name) {
+			const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+			return cookieValue ? decodeURIComponent(cookieValue.pop()) : null;
+		}
+	},
 };
 </script>
   
@@ -87,7 +117,6 @@ methods: {
   }
 }
 
-/* Styling the table */
 .styled-table {
   border-collapse: collapse;
   margin: 1px 0;
@@ -138,5 +167,21 @@ methods: {
 .centered-image {
   display: block;
   margin: 0 auto;
+}
+
+.styled-button {
+  background-color: #009879;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 8px 8px;
+  font-size: 1.05em;
+  font-family: sans-serif;
+  min-width: 95px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  overflow-x: hidden;
+  border-radius: 5px;
+  text-align: center;
 }
 </style>
