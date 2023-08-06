@@ -54,10 +54,19 @@ import router from "@/router";
 export default {
     name: "ManageLocations",
     props: {
-        locations: {
-            type: Array,
-            required: true,
-        },
+      locations: {
+        type: Array,
+        default() { 
+			return [
+				{ name: "Woonkamer", deviceId: "Woonkamer" },
+				{ name: "Kantoor Bart", deviceId: "Kantoor Bart" },
+				{ name: "Kantoor Sjoukje", deviceId: "Kantoor Sjoukje" },
+				{ name: "Buiten", deviceId: "Buiten" },
+				{ name: "Slaapkamer", deviceId: "Slaapkamer" },
+				{ name: "Printer", deviceId: "Printer" },
+			]
+		},
+      },
     },
     data() {
         return {
