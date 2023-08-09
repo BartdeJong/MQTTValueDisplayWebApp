@@ -22,6 +22,15 @@
 				</table>
 			</div>
 		</ion-card>
+		<label for="date-select">Tijd bereik grafiek:</label>
+		<div class="center-container">
+			<select name="date" id="date-select" v-model="record_amount" @change="updateRecordAmount" class="styled-select">
+				<option value="24">2 uur</option>
+				<option value="288">1 dag</option>
+				<option value="2016">1 week</option>
+				<option value="4016">2 weken</option>
+			</select>
+		</div>
 		<button class="styled-button" @click="goToManageLocations">Beheer locaties</button>
 	</div>
 </template>
@@ -67,6 +76,7 @@ export default {
 		return {
 			isOnline: false,
 			sensorNameValue: "Kantoor Bart",
+			record_amount: 288
 		};
 	},
 	created() {
@@ -88,7 +98,7 @@ export default {
 	},
 	methods: {
 		handleIBMWatsonClicked(deviceId) {
-			this.sensorNameValue = deviceId;
+			this.$eventBus.$emit("date-change", this.record_amount);
 		},
 		goToManageLocations() {
 			router.push({
@@ -101,7 +111,10 @@ export default {
 		getCookie(name) {
 			const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
 			return cookieValue ? decodeURIComponent(cookieValue.pop()) : null;
-		}
+		},
+		updateRecordAmount() {
+			this.$eventBus.$emit("date-change", this.record_amount);
+		},
 	},
 };
 </script>
@@ -183,5 +196,25 @@ export default {
   overflow-x: hidden;
   border-radius: 5px;
   text-align: center;
+}
+
+.styled-select {
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  padding: 8px;
+  font-size: 1.05em;
+  font-family: sans-serif;
+  min-width: 150px;
+  width: 50%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

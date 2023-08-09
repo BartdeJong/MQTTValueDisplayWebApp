@@ -23,7 +23,7 @@ export default {
       historicTempData: null,
       historicHumData: null,
       currentDataType: 'Temperatuur',
-      record_amount: 6000
+      record_amount: 288
     };
   },
   computed: {
@@ -32,18 +32,19 @@ export default {
     }
   },
   methods: {
-    fetchHistoricTempData(sensorName) {
+    fetchHistoricTempData(record_amount) {
+      this.record_amount = record_amount
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({"sensor_name": sensorName, "record_amount": this.record_amount})
+        body: JSON.stringify({"sensor_name": this.sensorName, "record_amount": record_amount})
       };
       fetch('https://ksmmf8pbj2.execute-api.eu-central-1.amazonaws.com/read-last-temps', requestOptions)
       .then(response => response.text())
       .then(response => {
         if (response.trim() !== '') {
           this.historicTempData = response;
-          this.refreshHistoryGraph();
+          this.refreshHistoryGraph(record_amount);
         }
       })
       .catch(error => {
@@ -60,18 +61,19 @@ export default {
         return data;
       }
     },
-    fetchHistoricHumData(sensorName) {
+    fetchHistoricHumData(record_amount) {
+      this.record_amount = record_amount
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({"sensor_name": sensorName, "record_amount": this.record_amount})
+        body: JSON.stringify({"sensor_name": this.sensorName, "record_amount": record_amount})
       };
       fetch('https://ksmmf8pbj2.execute-api.eu-central-1.amazonaws.com/read-last-hums', requestOptions)
       .then(response => response.text())
       .then(response => {
         if (response.trim() !== '') {
           this.historicHumData = response;
-          this.refreshHistoryGraph();
+          this.refreshHistoryGraph(record_amount);
         }
       })
       .catch(error => {
@@ -88,10 +90,10 @@ export default {
         return data;
       }
     },
-    refreshHistoryGraph() {
+    refreshHistoryGraph(record_amount) {
       const canvasId = "line-chart-" + this.sensorName;
       const canvasElement = document.getElementById(canvasId);
-      const labels = new Array(this.record_amount).fill("-");
+      const labels = new Array(record_amount).fill("-");
 
       new Chart(canvasElement, {
         type: 'line',
@@ -128,23 +130,26 @@ export default {
     },
     toggleData() {
       this.currentDataType = this.currentDataType === 'Temperatuur' ? 'Luchtvochtigheid' : 'Temperatuur';
-      this.refreshHistoryGraph();
+      this.refreshHistoryGraph(this.record_amount);
     },
   },
   created() {
-    eventBus.$on('ibmwatson-clicked' + this.deviceId, () => {
-      this.fetchHistoricTempData(this.sensorName);
-      this.fetchHistoricHumData(this.sensorName);
+    // eventBus.$on('ibmwatson-clicked' + this.deviceId, () => {
+    //   this.fetchHistoricTempData(this.record_amount);
+    //   this.fetchHistoricHumData(this.record_amount);
+    // });
+    eventBus.$on('date-change', (value) => {
+      this.fetchHistoricTempData(parseInt(value));
+      this.fetchHistoricHumData(parseInt(value));
     });
-
     setInterval(() => {
-      this.fetchHistoricTempData(this.sensorName);
-      this.fetchHistoricHumData(this.sensorName);
+      this.fetchHistoricTempData(this.record_amount);
+      this.fetchHistoricHumData(this.record_amount);
     }, 300000);
   },
   mounted() {
-    this.fetchHistoricTempData(this.sensorName);
-    this.fetchHistoricHumData(this.sensorName);
+    this.fetchHistoricTempData(this.record_amount);
+    this.fetchHistoricHumData(this.record_amount);
   }
 };
 </script>
