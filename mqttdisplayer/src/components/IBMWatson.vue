@@ -78,9 +78,6 @@ export default {
 		},
 		handleIBMWatsonClick() {
 			this.showHistory = !this.showHistory;
-			if (this.showHistory) {
-				this.$eventBus.$emit("ibmwatson-clicked" + this.deviceId);
-			}
 		},
     },
 	components: {

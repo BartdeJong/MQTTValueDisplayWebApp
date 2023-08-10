@@ -14,7 +14,6 @@
 						<IBMWatson
 							v-for="location in locations"
 							:key="location.deviceId"
-							@ibmwatson-clicked="handleIBMWatsonClicked"
 							:name="location.name"
 							:deviceId="location.deviceId"
 						/>
@@ -28,7 +27,6 @@
 				<option value="24">2 uur</option>
 				<option value="288">1 dag</option>
 				<option value="2016">1 week</option>
-				<option value="4016">2 weken</option>
 			</select>
 		</div>
 		<button class="styled-button" @click="goToManageLocations">Beheer locaties</button>
@@ -44,6 +42,7 @@ import forecast from "@/components/forecast.vue";
 import history from "@/components/history.vue";
 import router from "@/router";
 import ManageLocations from "@/components/ManageLocations.vue";
+import { eventBus } from '@/eventBus.js';
 
 var noSleep = new NoSleep();
 document.addEventListener(
@@ -84,7 +83,11 @@ export default {
 
 		if (locationsData !== null) {
 			this.locations = JSON.parse(locationsData);
-		}
+		};
+
+		eventBus.$on('create-history', () => {
+			this.$eventBus.$emit("date-change", this.record_amount);
+		});
 	},
 	computed: {
 		...mapGetters(["Message", "lastMessageTime"]),
@@ -97,9 +100,6 @@ export default {
 		ManageLocations,
 	},
 	methods: {
-		handleIBMWatsonClicked(deviceId) {
-			this.$eventBus.$emit("date-change", this.record_amount);
-		},
 		goToManageLocations() {
 			router.push({
 				name: "ManageLocations"
