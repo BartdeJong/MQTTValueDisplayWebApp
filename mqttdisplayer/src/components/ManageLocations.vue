@@ -9,13 +9,18 @@
                 v-model="newLocationName"
                 required
             />
-            <label for="newLocationDeviceId">Nieuw apparaat ID</label>
+            <select v-model="selected">
+                <option v-for="option in possibleLocations" v-bind:value="option.text">
+                    {{ option.text }}
+                </option>
+            </select>
+            <!-- <label for="newLocationDeviceId">Nieuw apparaat ID</label>
             <input
                 type="text"
                 id="newLocationDeviceId"
                 v-model="newLocationDeviceId"
                 required
-            />
+            /> -->
             <button class="styled-button" type="submit">Voeg locatie toe</button>
         </form>
     
@@ -72,32 +77,50 @@ export default {
         return {
             newLocationName: "",
             newLocationDeviceId: "",
+            selectedDeviceId: null,
+            possibleLocations: [],
+            selected: 'None',
         };
     },
     created() {
-		const locationsData = this.getCookie("locationsData");
+        const locationsData = this.getCookie("locationsData");
 
 		if (locationsData !== null) {
 			this.locations = JSON.parse(locationsData);
 		}
+
+        this.getLocations().then(response => {
+            var locations = response.split(",");
+            locations.forEach((location) => this.possibleLocations.push({text: location}))
+            let i = 0;
+            do {
+                if(this.possibleLocations.length > 0 && this.possibleLocations.length == locations.length){
+                    let timeout = null;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        this.renderSelect();
+                    }, 100);
+                    break;
+                }
+            } while (i < 5);
+        })
 	},
     methods: {
         addLocation() {
             // Check if the new location name and deviceId are not empty
-            if (this.newLocationName.trim() !== "" && this.newLocationDeviceId.trim() !== "") {
+            if (this.newLocationName.trim() !== "" && this.selected.trim() !== "") {
                 // Emit a custom event to notify the parent component (Home.vue) to add the new location
                 this.locations.push({
                     name: this.newLocationName,
-                    deviceId: this.newLocationDeviceId,
+                    deviceId: this.selected,
                 });
                 // Reset the input fields
                 this.newLocationName = "";
-                this.newLocationDeviceId = "";
+                this.selected = "None";
             }
         },
         removeLocation(index) {
-        // Remove the location from the locations array in this component
-        this.locations.splice(index, 1);
+            this.locations.splice(index, 1);
         },
         setCookie(name, value, daysToExpire) {
             const date = new Date();
@@ -118,7 +141,19 @@ export default {
         getCookie(name) {
 			const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
 			return cookieValue ? decodeURIComponent(cookieValue.pop()) : null;
-		}
+		},
+        getLocations() {
+			const requestOptions = {
+				method: "POST",
+				headers: { "Content-Type": "application/json" }
+			};
+
+			return fetch('https://c4c6uk1i70.execute-api.eu-central-1.amazonaws.com/prod/read-locations-cdk', requestOptions
+			).then(response => response.text());
+		},
+        renderSelect() {
+            M.FormSelect.init(document.querySelectorAll('select'));
+        },
     },
 };
 </script>

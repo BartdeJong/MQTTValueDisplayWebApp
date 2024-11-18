@@ -51,7 +51,7 @@ export default {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({"sensor_name": this.deviceId})
 			};
-			return fetch('https://bwlgkni215.execute-api.eu-central-1.amazonaws.com/default/read-temp-hum', requestOptions
+			return fetch('https://681u4lp0vi.execute-api.eu-central-1.amazonaws.com/prod/read-temp-hum-cdk', requestOptions
 			).then(response => response.json());
 		},
 		minuteNoReceive() {
@@ -87,6 +87,8 @@ export default {
 		this.getTempAndHum().then(response => {
 			if(response.message != 'Sensor not found') {
 				this.jsonResponse = response;
+				this.isElevenMinuteNoReceive = this.minuteNoReceive();
+				this.isHalfAnHourNoReceive = this.halfAnHourNoReceive();
 			}
 		});
 		setInterval(() => {

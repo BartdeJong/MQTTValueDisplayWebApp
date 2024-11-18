@@ -27,12 +27,13 @@ export default {
   methods: {
     fetchhistoricData(record_amount) {
       const type = this.currentDataType == 'Temperatuur' ? "temps" : "hums"
+      const apiid = this.currentDataType == 'Temperatuur' ? "4dq0cg8znc" : "6oewbmsm96"
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({"sensor_name": this.sensorName, "record_amount": record_amount})
       };
-      fetch('https://ksmmf8pbj2.execute-api.eu-central-1.amazonaws.com/read-last-' + type, requestOptions)
+      fetch('https://' + apiid + '.execute-api.eu-central-1.amazonaws.com/prod/read-last-' + type + '-cdk', requestOptions)
       .then(response => response.text())
       .then(response => {
         if (response.trim() !== '') {
