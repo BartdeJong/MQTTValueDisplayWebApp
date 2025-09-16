@@ -151,7 +151,7 @@ export default {
 /* Styling the table cells */
 .styled-table th,
 .styled-table td {
-  padding: 12px 15px;
+  padding: 8px 15px;
 }
 
 /* Styling the table rows */

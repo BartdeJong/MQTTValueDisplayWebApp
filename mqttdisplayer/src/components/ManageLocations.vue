@@ -1,26 +1,19 @@
 <template>
     <div class="manage-locations">
         <h4>Voeg nieuwe locatie toe</h4>
-        <form @submit.prevent="addLocation">
-            <label for="newLocationName">Nieuwe locatie naam</label>
+        <form @submit.prevent="addLocation" class="deviceselect">
+            <label>Selecteer Apparaat ID</label>
+            <div class="radio-toolbar" v-for="option in possibleLocations">
+                <input type="radio" v-bind:id="option.text" v-bind:value="option.text" v-model="selected">
+                <label class="radio-input" v-bind:for="option.text">{{ option.text }}</label>
+                <br>
+            </div>
+            <label for="newLocationName">Nieuwe locatie naam (optioneel)</label>
             <input
                 type="text"
                 id="newLocationName"
                 v-model="newLocationName"
-                required
             />
-            <select v-model="selected">
-                <option v-for="option in possibleLocations" v-bind:value="option.text">
-                    {{ option.text }}
-                </option>
-            </select>
-            <!-- <label for="newLocationDeviceId">Nieuw apparaat ID</label>
-            <input
-                type="text"
-                id="newLocationDeviceId"
-                v-model="newLocationDeviceId"
-                required
-            /> -->
             <button class="styled-button" type="submit">Voeg locatie toe</button>
         </form>
     
@@ -76,10 +69,9 @@ export default {
     data() {
         return {
             newLocationName: "",
-            newLocationDeviceId: "",
             selectedDeviceId: null,
             possibleLocations: [],
-            selected: 'None',
+            selected: "",
         };
     },
     created() {
@@ -89,27 +81,16 @@ export default {
 			this.locations = JSON.parse(locationsData);
 		}
 
-        this.getLocations().then(response => {
-            var locations = response.split(",");
-            locations.forEach((location) => this.possibleLocations.push({text: location}))
-            let i = 0;
-            do {
-                if(this.possibleLocations.length > 0 && this.possibleLocations.length == locations.length){
-                    let timeout = null;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        this.renderSelect();
-                    }, 100);
-                    break;
-                }
-            } while (i < 5);
-        })
+        this.getLocations()
 	},
     methods: {
         addLocation() {
             // Check if the new location name and deviceId are not empty
-            if (this.newLocationName.trim() !== "" && this.selected.trim() !== "") {
+            if (this.selected.trim() !== "") {
                 // Emit a custom event to notify the parent component (Home.vue) to add the new location
+                if(this.newLocationName == ""){
+                    this.newLocationName = this.selected
+                }
                 this.locations.push({
                     name: this.newLocationName,
                     deviceId: this.selected,
@@ -117,6 +98,8 @@ export default {
                 // Reset the input fields
                 this.newLocationName = "";
                 this.selected = "None";
+
+                this.getLocations()
             }
         },
         removeLocation(index) {
@@ -149,8 +132,23 @@ export default {
 			};
 
 			return fetch('https://c4c6uk1i70.execute-api.eu-central-1.amazonaws.com/prod/read-locations-cdk', requestOptions
-			).then(response => response.text());
+			).then(response => response.text()).then(response => {
+                var locations = response.split(",");
+                this.possibleLocations = [];
+                locations.forEach((location) => this.possiblyAddLocation(location))
+            });
 		},
+        possiblyAddLocation(newLocation){
+            var inLocations = false;
+            this.locations.forEach((location) => {
+                if(location.deviceId == newLocation){
+                    inLocations = true;
+                }
+            });
+            if(!inLocations){
+                this.possibleLocations.push({text: newLocation});
+            }
+        },
         renderSelect() {
             M.FormSelect.init(document.querySelectorAll('select'));
         },
@@ -186,7 +184,7 @@ export default {
 /* Styling the table cells */
 .styled-table th,
 .styled-table td {
-  padding: 12px 15px;
+  padding: 8px 15px;
 }
 
 /* Styling the table rows */
@@ -215,5 +213,32 @@ export default {
 .centered {
   display: block;
   margin: 0 auto;
+}
+
+.radio-input {
+    color: #009879;
+    font-size: large;
+    font-weight: bold;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: 2px solid #009879;
+    border-radius: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    width:57.5vw;
+    display: block;
+}
+
+.radio-toolbar input[type="radio"]:checked+label {
+    color: #EFBF04;
+    border-color: #EFBF04;
+}
+
+.radio-toolbar {
+    height: 30px;
 }
 </style>  
