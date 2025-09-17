@@ -1,21 +1,23 @@
 <template>
-    <div class="manage-locations">
-        <h4>Voeg nieuwe locatie toe</h4>
-        <form @submit.prevent="addLocation" class="deviceselect">
-            <label>Selecteer Apparaat ID</label>
-            <div class="radio-toolbar" v-for="option in possibleLocations">
-                <input type="radio" v-bind:id="option.text" v-bind:value="option.text" v-model="selected">
-                <label class="radio-input" v-bind:for="option.text">{{ option.text }}</label>
-                <br>
-            </div>
-            <label for="newLocationName">Nieuwe locatie naam (optioneel)</label>
-            <input
-                type="text"
-                id="newLocationName"
-                v-model="newLocationName"
-            />
-            <button class="styled-button" type="submit">Voeg locatie toe</button>
-        </form>
+    <div class="manage-locations" :style="{ backgroundImage: `url(${backgroundImageUrl})` }">
+        <div class="form-container">
+            <h4>Voeg nieuwe locatie toe</h4>
+            <form @submit.prevent="addLocation" class="deviceselect">
+                <div class="radio-toolbar" v-for="option in possibleLocations">
+                    <input type="radio" v-bind:id="option.text" v-bind:value="option.text" v-model="selected">
+                    <label class="radio-input" v-bind:for="option.text">{{ option.text }}</label>
+                    <br>
+                </div>
+                <label for="newLocationName">Nieuwe locatie naam (optioneel)</label>
+                <input
+                    type="text"
+                    id="newLocationName"
+                    v-model="newLocationName"
+                />
+                <button class="styled-button" type="submit">Voeg locatie toe</button>
+            </form>
+        </div>
+
     
         <!-- List of existing locations with the option to remove -->
         <div v-if="locations.length > 0" class="table-container">
@@ -33,7 +35,7 @@
                         <td class="largeText">{{ location.name }}</td>
                         <td class="largeText">{{ location.deviceId }}</td>
                         <td class="centered">
-                            <button class="styled-button" @click="removeLocation(index)">Verwijder</button>
+                            <button class="styled-button" @click="removeLocation(index)">Wis</button>
                         </td>
                     </tr>
                 </tbody>
@@ -72,6 +74,7 @@ export default {
             selectedDeviceId: null,
             possibleLocations: [],
             selected: "",
+            backgroundImageUrl: localStorage.getItem('userBackgroundImage') || 'https://images.pexels.com/photos/1172064/pexels-photo-1172064.jpeg',
         };
     },
     created() {
@@ -156,58 +159,174 @@ export default {
 };
 </script>
 
-<style>
-/* Add your custom styles for the ManageLocations page here */
+<style lang="scss">
+.form-container {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  font-family: 'Segoe UI', sans-serif;
+  color: #1e1e1e;
+}
+
 .manage-locations {
-    max-width: 600px;
-    margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  transition: background-image 0.3s ease;
+}
+
+h4 {
+  font-size: 1.6em;           /* larger text */
+  font-weight: 700;           /* bolder weight */
+  color: #1e1e1e;             /* darker for contrast */
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;      /* subtle spacing for clarity */
+}
+
+label {
+  font-weight: 500;
+  font-size: 1.05em;
+  color: #2a2a2a;
+  display: block;
+  margin-top: 0px;
+}
+
+label[for="newLocationName"] {
+  font-size: 1.15em;     /* slightly larger */
+  font-weight: 600;      /* bolder than default */
+  color: #2a2a2a;         /* consistent with theme */
+  margin-top: 8px;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px; /* subtle clarity boost */
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px 14px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 1.05em;
+  font-weight: 500;
+  color: #1e1e1e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  text-align: center; /* centers the text horizontally */
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #00c9a7;
+  box-shadow: 0 0 8px rgba(0, 201, 167, 0.4);
+}
+
+.styled-button {
+  background: rgba(0, 152, 121, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  padding: 10px 14px;         /* reduced padding */
+  font-size: 1em;             /* slightly smaller font */
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: background 0.3s ease;
+  max-width: 240px;
+  width: auto;                /* allow button to size to content */
+  margin: 6px auto;
+  display: block;
+  white-space: nowrap;       /* prevent wrapping */
+}
+
+
+.styled-button:hover {
+  background: rgba(0, 152, 121, 0.5);
+}
+
+.table-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* prevent horizontal scroll */
+  padding: 0px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .styled-table {
-  border-collapse: collapse;
-  margin: 1px 0;
-  font-size: 1.05em;
-  font-family: sans-serif;
-  min-width: 250px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   width: 100%;
-  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-collapse: collapse;
+  table-layout: fixed; /* ensures columns don’t overflow */
 }
 
-/* Styling the header */
+/* Header */
 .styled-table thead tr {
-  background-color: #009879;
+  background: rgba(0, 152, 121, 0.35);
   color: #ffffff;
+  font-weight: 600;
   text-align: left;
 }
 
-/* Styling the table cells */
+/* Cells */
 .styled-table th,
 .styled-table td {
-  padding: 8px 15px;
+  padding: 6px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Styling the table rows */
-.styled-table tbody tr {
-  border-bottom: 1px solid #dddddd;
-}
-
+/* Rows */
 .styled-table tbody tr:nth-of-type(even) {
-  background-color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .styled-table tbody tr:nth-of-type(odd) {
-  background-color: #f3f3f3e3;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .styled-table tbody tr:last-of-type {
-  border-bottom: 2px solid #009879;
+  border-bottom: 2px solid rgba(0, 152, 121, 0.4);
 }
 
-/* Styling the active row */
 .styled-table tbody tr.active-row {
   font-weight: bold;
-  color: #009879;
+  color: #00c9a7;
+}
+
+.largeText {
+  font-size: 1.05em;
 }
 
 .centered {
@@ -215,30 +334,36 @@ export default {
   margin: 0 auto;
 }
 
-.radio-input {
-    color: #009879;
-    font-size: large;
-    font-weight: bold;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border: 2px solid #009879;
-    border-radius: 5px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    width:57.5vw;
-    display: block;
-}
-
-.radio-toolbar input[type="radio"]:checked+label {
-    color: #EFBF04;
-    border-color: #EFBF04;
-}
-
 .radio-toolbar {
-    height: 30px;
+  display: inline-block;       /* shrink to fit content */
+  margin: 0;                   /* remove extra spacing */
+  padding: 0;                  /* no padding */
+  line-height: normal;         /* reset line height */
+  vertical-align: middle;      /* align with surrounding elements */
 }
-</style>  
+
+.radio-toolbar input[type="radio"] {
+  display: none;
+}
+
+.radio-input {
+  padding: 6px 10px;
+  font-size: 1em;
+  font-weight: 600;
+  margin: 2px 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid #009879;
+  color: #1e1e1e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.radio-toolbar input[type="radio"]:checked + .radio-input {
+  color: #EFBF04;
+  border-color: #EFBF04;
+  background: rgba(255, 255, 255, 0.3);
+}
+</style>
