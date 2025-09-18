@@ -26,20 +26,21 @@
         </table>
       </div>
     </ion-card>
-    <label for="date-select">Tijd bereik grafiek:</label>
-    <div class="center-container">
-      <select name="date" id="date-select" v-model="record_amount" @change="updateRecordAmount" class="styled-select">
-        <option value="24">2 uur</option>
-        <option value="288">1 dag</option>
-        <option value="2016">1 week</option>
-      </select>
+    <div class="control-panel">
+      <h3 class="panel-title">Instellingen</h3>
+      <div class="center-container">
+        <select name="date" id="date-select" v-model="record_amount" @change="updateRecordAmount" class="styled-select">
+          <option value="24">2 uur</option>
+          <option value="288">1 dag</option>
+          <option value="2016">1 week</option>
+        </select>
+      </div>
+      <button class="styled-button" @click="goToManageLocations">Beheer locaties</button>
+      <label class="styled-button upload-wrapper">
+        📁 Kies achtergrond
+        <input type="file" accept="image/*" @change="handleBackgroundUpload" class="upload-input" />
+      </label>
     </div>
-    <button class="styled-button" @click="goToManageLocations">Beheer locaties</button>
-	<label class="upload-wrapper">
-		<span class="upload-button">📁 Kies achtergrond</span>
-	<input type="file" accept="image/*" @change="handleBackgroundUpload" class="upload-input" />
-</label>
-
   </div>
 </template>
   
@@ -168,29 +169,100 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background: center / cover no-repeat fixed;
   transition: background-image 0.3s ease;
 }
 
-.upload-input {
-  margin: 12px auto;
-  display: block;
+.control-panel {
+  width: 75%;
+  max-width: 720px;
+  margin: 10px auto;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  margin: 12px 0 4px;
+}
+
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.styled-select {
+  width: 50%;
   padding: 6px 12px;
-  font-size: 1em;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 1.1em;
+  font-weight: 500;
   color: #1e1e1e;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  line-height: 1.2;
+  display: block;
+}
+
+.styled-button {
+  width: 100%;
+  max-width: 240px;
+  margin: 0 auto;
+  padding: 6px 18px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(0, 152, 121, 0.35);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
   transition: background 0.3s ease;
 }
 
-.upload-input:hover {
+.styled-button:hover {
+  background: rgba(0, 152, 121, 0.5);
+}
+
+.upload-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+  margin-bottom: 10px;
+}
+
+.upload-input {
+  display: none;
+}
+
+.upload-button {
+  padding: 8px 14px;
+  font-size: 1em;
+  font-weight: 500;
+  color: #1e1e1e;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  transition: background 0.3s ease;
+}
+
+.upload-button:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
@@ -198,23 +270,20 @@ html, body {
   overflow-x: auto;
   background: rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
 }
 
 .styled-table {
-  border-collapse: collapse;
   width: 100%;
-  max-width: 100%;
+  border-collapse: collapse;
   table-layout: fixed;
-  font-size: 1.0em;
+  font-size: 1em;
   font-weight: 500;
   color: #2a2a2a;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -232,11 +301,6 @@ html, body {
   padding: 7px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.styled-table tbody tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .styled-table tbody tr:nth-of-type(even) {
@@ -259,88 +323,6 @@ html, body {
 .centered-image {
   display: block;
   margin: 0 auto;
-}
-
-.styled-button {
-  background: rgba(0, 152, 121, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #ffffff;
-  font-weight: 600;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 12px 18px;
-  font-size: 1.1em;
-  border-radius: 8px;
-  box-shadow: none;
-  text-align: center;
-  transition: background 0.3s ease;
-  max-width: 240px;
-  width: 100%;
-  margin: 12px auto;
-}
-
-.upload-wrapper {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 12px auto;
-  cursor: pointer;
-}
-
-.upload-button {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  color: #1e1e1e;
-  font-size: 1em;
-  font-weight: 500;
-  padding: 8px 14px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  transition: background 0.3s ease;
-  white-space: nowrap;
-}
-
-.upload-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.upload-input {
-  display: none; /* hide native input */
-}
-
-.upload-input:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-
-.styled-button:hover {
-  background: rgba(0, 152, 121, 0.5);
-}
-
-.styled-select {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 1.1em;
-  font-weight: 500;
-  color: #1e1e1e;
-  width: 50%;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
-  display: block;
-  line-height: 1.2;
-}
-
-.center-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 @media (max-width: 600px) {
