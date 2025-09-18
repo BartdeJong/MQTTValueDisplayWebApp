@@ -126,31 +126,30 @@ export default {
     updateRecordAmount() {
       this.$eventBus.$emit("date-change", this.record_amount);
     },
-	handleBackgroundUpload(event) {
-		const file = event.target.files[0];
-		if (!file) return;
+	  handleBackgroundUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-		const img = new Image();
-		const reader = new FileReader();
+      const img = new Image();
+      const reader = new FileReader();
 
-		reader.onload = (e) => {
-			img.src = e.target.result;
-			img.onload = () => {
-			const canvas = document.createElement('canvas');
-			canvas.width = 1280; // or smaller
-			canvas.height = (img.height / img.width) * 1280;
+      reader.onload = (e) => {
+        img.src = e.target.result;
+        img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1280; // or smaller
+        canvas.height = (img.height / img.width) * 1280;
 
-			const ctx = canvas.getContext('2d');
-			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-			const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // quality 0.7
-			this.backgroundImageUrl = compressedDataUrl;
-			localStorage.setItem('userBackgroundImage', compressedDataUrl);
-			};
-		};
-
-	reader.readAsDataURL(file);
-	},
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // quality 0.7
+        this.backgroundImageUrl = compressedDataUrl;
+        localStorage.setItem('userBackgroundImage', compressedDataUrl);
+        };
+      };
+      reader.readAsDataURL(file);
+    },
   },
 };
 </script>
