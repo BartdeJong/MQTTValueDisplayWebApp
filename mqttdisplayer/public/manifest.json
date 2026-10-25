@@ -1,6 +1,6 @@
 {
-  "name": "MQTT Weather",
-  "short_name": "Weather",
+  "name": "MQTT Waarden",
+  "short_name": "MQTT Waarden",
   "icons": [
     {
       "src": "img/icons/android-chrome-192x192.png",
@@ -31,6 +31,6 @@
   ],
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000"
+  "background_color": "#f8fafc",
+  "theme_color": "#14532d"
 }

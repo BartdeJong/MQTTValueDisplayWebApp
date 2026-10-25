@@ -1,48 +1,55 @@
 import mqtt from 'mqtt';
-import store from '../store';
+import { addMessage, setConnection } from '../store.mjs';
 
 export default class MQTT {
-
-	constructor(broker, options, topic, json){
-		this._json = json;
+	constructor(broker, options, topic, connectionTopic = topic) {
 		this._topic = topic;
+		this._connectionTopic = connectionTopic;
 		this._client = mqtt.connect(broker, options);
 		this.connect();
 		this.listen();
 	}
 
-	connect(){
+	connect() {
 		this._client.on("connect", () => {
-			this._client.subscribe(this._topic);
+			setConnection({
+				topic: this._connectionTopic,
+				status: "connecting",
+			});
+			this._client.subscribe(this._topic, error => {
+				setConnection({
+					topic: this._connectionTopic,
+					status: error ? "error" : "connected",
+					error: error ? error.message : null,
+				});
+			});
+		});
+		this._client.on("reconnect", () => this.setStatus("connecting"));
+		this._client.on("offline", () => this.setStatus("offline"));
+		this._client.on("close", () => this.setStatus("disconnected"));
+		this._client.on("error", error => this.setStatus("error", error.message));
+	}
+
+	listen() {
+		this._client.on("message", (topic, message) => {
+			addMessage({
+				payload: message.toString(),
+				topic,
+				receivedAt: Date.now(),
+			});
 		});
 	}
 
-	listen(){
-		this._client.on("message", (topic, message) => {
-			let newMessage = {};
-			newMessage.payload = message.toString();
-			newMessage.topic = topic;
-			
-			let storeMessage = this.findMessage();
-
-			if (storeMessage)
-				this.deleteMessage(storeMessage)
-
-			this.addMessage(newMessage)
-		}); 
+	setStatus(status, error = null) {
+		setConnection({
+			topic: this._connectionTopic,
+			status,
+			error,
+		});
 	}
 
-	findMessage(){
-		let message = store.state.messages.find(message => message.topic == this._topic);
-		return message;
-	}
-
-	addMessage(message){
-		store.state.messages.push(message);
-	}
-
-	deleteMessage(message){
-		let messageIndex = store.state.messages.indexOf(message);
-		store.state.messages.splice(messageIndex, 1);
+	disconnect() {
+		this._client.end(true);
+		this.setStatus("disconnected");
 	}
 }

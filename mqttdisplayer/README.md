@@ -1,29 +1,40 @@
-# mqttdisplayer
+# MQTT Waarden
+
+Dashboard for live temperature and humidity readings, location management, and sensor history.
 
 ## Project setup
-```
-npm install
+
+```sh
+npm ci
 ```
 
-### Compiles and hot-reloads for development 
-```
-npm run serve
+## Development server
+
+```sh
+npm run dev
 ```
 
-### Compiles and minifies for production
-```
+To test on a phone connected to the same Wi-Fi, open `http://<computer-ip>:8085`
+in the phone's browser (for example, `http://192.168.1.216:8085`).
+
+## Production build
+
+```sh
 npm run build
 ```
 
-### Run your tests
-```
-npm run test
-```
+## Tests and lint
 
-### Lints and fixes files
-```
+```sh
+npm test
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+The app uses Svelte 5 and Vite 8. Use Node.js 20.19+, 22.13+, or newer for local
+development and CI. Sensor history and freshness helpers are covered by the built-in
+Node.js test runner.
+
+The production build retains the `/WeatherProd/` base path, existing manifest URL,
+`service-worker.js` location and scope, `locationsData` cookie, and
+`userBackgroundImage` local-storage key so previously installed PWAs can keep their
+settings and receive the new app shell when their service worker updates.

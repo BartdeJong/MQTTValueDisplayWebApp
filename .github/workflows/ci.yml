@@ -1,0 +1,29 @@
+name: MQTT Waarden CI
+
+on:
+  push:
+    paths:
+      - "mqttdisplayer/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "mqttdisplayer/**"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mqttdisplayer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
+          cache: npm
+          cache-dependency-path: mqttdisplayer/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build

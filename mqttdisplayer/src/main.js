@@ -1,27 +1,17 @@
-import Vue from 'vue';
-import App from './App.vue';
-import router from './router';
-import './registerServiceWorker';
-import store from './store';
-import Ionic from '@ionic/vue';
-import 'materialize-css';
-import 'materialize-css/dist/css/materialize.css';
-import { eventBus } from './eventBus.js';
-import Fragment from 'vue-fragment';
+import { mount } from "svelte";
+import App from "./App.svelte";
+import "./app.css";
 
-Vue.config.productionTip = false;
-Vue.use(Ionic);
-Vue.use(Fragment.Plugin);
-
-// Create the Vue instance with the necessary configurations
-const app = new Vue({
-  router,
-  store,
-  render: h => h(App)
+mount(App, {
+	target: document.getElementById("app"),
 });
 
-// Mount the Vue instance to the #app element
-app.$mount('#app');
-
-// Set the event bus as a global property on the Vue prototype
-Vue.prototype.$eventBus = eventBus;
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+	navigator.serviceWorker
+		.register(`${import.meta.env.BASE_URL}service-worker.js`, {
+			scope: import.meta.env.BASE_URL,
+		})
+		.catch(error => {
+			console.error("Service worker registration failed:", error);
+		});
+}

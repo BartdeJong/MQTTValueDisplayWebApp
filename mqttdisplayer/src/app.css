@@ -1,0 +1,87 @@
+:root {
+	font-family: "Segoe UI", Arial, sans-serif;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: #fff;
+	background: #171717;
+}
+
+html,
+body,
+#app {
+	min-height: 100%;
+	margin: 0;
+}
+
+body {
+	overflow-x: hidden;
+}
+
+button,
+select,
+input {
+	font: inherit;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+a:focus-visible {
+	outline: 3px solid #efbf04;
+	outline-offset: 3px;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.sensor-status {
+	display: block;
+	font-size: 0.8rem;
+	font-weight: 500;
+}
+
+.sensor-status--fresh,
+.sensor-status--connected {
+	color: #8ce265;
+}
+
+.sensor-status--stale {
+	color: #efbf04;
+}
+
+.sensor-status--offline,
+.sensor-status--disconnected,
+.sensor-status--error,
+.sensor-status--unknown,
+.sensor-status--connecting {
+	color: #ff7777;
+}
+
+.sensor-row--stale {
+	background: rgba(239, 191, 4, 0.12);
+}
+
+.largeText {
+	font-size: xx-large;
+}
+
+@media (max-width: 600px) {
+	.sizeUp {
+		font-size: medium;
+	}
+
+	.largeText {
+		font-size: large;
+	}
+}
