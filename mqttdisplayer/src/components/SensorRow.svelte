@@ -102,55 +102,44 @@
 </script>
 
 <article class="sensor-card" class:sensor-row--stale={jsonResponse && freshness.state !== "fresh"}>
-	<header class="sensor-card-heading">
-		<div class="sensor-place">
-			<span class="place-icon" aria-hidden="true">
-				<svg viewBox="0 0 24 24" fill="none">
-					<path d="M3.5 10.4 12 3l8.5 7.4v9.1a1 1 0 0 1-1 1h-5.2v-6h-4.6v6H4.5a1 1 0 0 1-1-1v-9.1Z" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
-			</span>
-			<div>
-				<h3>{name}</h3>
-				<p class={statusClass} role={errorMessage ? "alert" : "status"}>{statusText}</p>
+	<button class="sensor-card-summary" type="button" aria-expanded={showHistory} onclick={toggleHistory}>
+		<header class="sensor-card-heading">
+			<div class="sensor-place">
+				<span class="place-icon" aria-hidden="true">
+					<svg viewBox="0 0 24 24" fill="none">
+						<path d="M3.5 10.4 12 3l8.5 7.4v9.1a1 1 0 0 1-1 1h-5.2v-6h-4.6v6H4.5a1 1 0 0 1-1-1v-9.1Z" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</span>
+				<div>
+					<h3>{name}</h3>
+					<p class={statusClass} role={errorMessage ? "alert" : "status"}>{statusText}</p>
+				</div>
+			</div>
+		</header>
+
+		<div class="measurement-grid">
+			<div class="measurement">
+				<span class="measurement-label">
+					<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+						<path d="M10 14.4V5a2 2 0 1 1 4 0v9.4a4 4 0 1 1-4 0Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+						<path d="M12 11v7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+					</svg>
+					Temperatuur
+				</span>
+				<strong>{jsonResponse ? jsonResponse.temperature : "—"}<small>{jsonResponse ? "°C" : ""}</small></strong>
+			</div>
+			<div class="measurement">
+				<span class="measurement-label">
+					<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+						<path d="M12 3.5S5.5 11 5.5 15.2a6.5 6.5 0 1 0 13 0C18.5 11 12 3.5 12 3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+						<path d="M9.5 16.2a2.5 2.5 0 0 0 2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+					</svg>
+					Luchtvochtigheid
+				</span>
+				<strong>{jsonResponse ? jsonResponse.humidity : "—"}<small>{jsonResponse ? "%" : ""}</small></strong>
 			</div>
 		</div>
-		<button
-			class="history-button"
-			type="button"
-			aria-expanded={showHistory}
-			aria-label={`${showHistory ? "Verberg" : "Toon"} meetgeschiedenis voor ${name}`}
-			onclick={toggleHistory}
-		>
-			<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-				<path d="M3.5 12a8.5 8.5 0 1 0 2.3-5.8L3.5 8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-				<path d="M3.5 4.5v4h4M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg>
-			<span>{showHistory ? "Verberg" : "Geschiedenis"}</span>
-		</button>
-	</header>
-
-	<div class="measurement-grid">
-		<div class="measurement">
-			<span class="measurement-label">
-				<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-					<path d="M10 14.4V5a2 2 0 1 1 4 0v9.4a4 4 0 1 1-4 0Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-					<path d="M12 11v7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-				</svg>
-				Temperatuur
-			</span>
-			<strong>{jsonResponse ? jsonResponse.temperature : "—"}<small>{jsonResponse ? "°C" : ""}</small></strong>
-		</div>
-		<div class="measurement">
-			<span class="measurement-label">
-				<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-					<path d="M12 3.5S5.5 11 5.5 15.2a6.5 6.5 0 1 0 13 0C18.5 11 12 3.5 12 3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-					<path d="M9.5 16.2a2.5 2.5 0 0 0 2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-				</svg>
-				Luchtvochtigheid
-			</span>
-			<strong>{jsonResponse ? jsonResponse.humidity : "—"}<small>{jsonResponse ? "%" : ""}</small></strong>
-		</div>
-	</div>
+	</button>
 
 	{#if showHistory && historyLoadError}
 		<div class="history-panel">
@@ -178,6 +167,24 @@
 	.sensor-card:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 16px 34px rgba(26, 57, 52, 0.1);
+	}
+
+	.sensor-card-summary {
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.sensor-card-summary:focus-visible {
+		outline: 3px solid rgba(8, 126, 115, 0.45);
+		outline-offset: 4px;
+		border-radius: 8px;
 	}
 
 	.sensor-card-heading,
@@ -224,32 +231,6 @@
 
 	.sensor-place p {
 		margin: 5px 0 0;
-	}
-
-	.history-button {
-		display: inline-flex;
-		min-height: 36px;
-		align-items: center;
-		gap: 6px;
-		padding: 0 9px;
-		border: 0;
-		border-radius: 9px;
-		background: transparent;
-		color: var(--color-muted);
-		font-size: 0.75rem;
-		font-weight: 650;
-		cursor: pointer;
-	}
-
-	.history-button:hover,
-	.history-button[aria-expanded="true"] {
-		background: #edf6f3;
-		color: var(--color-primary-dark);
-	}
-
-	.history-button svg {
-		width: 16px;
-		height: 16px;
 	}
 
 	.measurement-grid {
@@ -324,17 +305,23 @@
 
 	@media (max-width: 480px) {
 		.sensor-card {
-			display: grid;
-			grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.8fr) minmax(0, 0.85fr) 23px;
-			align-items: center;
-			gap: 1px 4px;
+			display: block;
 			min-height: 36px;
 			padding: 2px 6px;
 			border-radius: 9px;
 			box-shadow: 0 2px 7px rgba(26, 57, 52, 0.04);
 		}
 
-		.sensor-card:hover {
+		.sensor-card-summary {
+			display: grid;
+			grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.8fr) minmax(0, 0.85fr);
+			align-items: center;
+			gap: 1px 4px;
+			min-height: 32px;
+		}
+
+		.sensor-card:hover,
+		.sensor-card:focus-within {
 			transform: none;
 			box-shadow: 0 2px 7px rgba(26, 57, 52, 0.04);
 		}
@@ -371,26 +358,6 @@
 			white-space: nowrap;
 		}
 
-		.history-button span {
-			display: none;
-		}
-
-		.history-button {
-			grid-column: 4;
-			grid-row: 1;
-			width: 23px;
-			min-height: 25px;
-			justify-content: center;
-			padding: 0;
-			border-radius: 7px;
-			background: #f1f7f5;
-		}
-
-		.history-button svg {
-			width: 14px;
-			height: 14px;
-		}
-
 		.measurement-grid {
 			display: contents;
 		}
@@ -424,10 +391,15 @@
 			grid-row: 1;
 		}
 
+		.measurement {
+			justify-self: end;
+		}
+
 		.measurement strong {
 			margin: 0;
 			font-size: 1rem;
 			letter-spacing: -0.035em;
+			text-align: right;
 		}
 
 		.measurement strong small {

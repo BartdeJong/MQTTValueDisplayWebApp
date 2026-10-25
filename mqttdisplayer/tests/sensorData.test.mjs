@@ -48,8 +48,21 @@ test("AM2301 readings are parsed and invalid payloads are rejected", () => {
 
 test("numeric and historical readings reject invalid values", () => {
   assert.equal(parseNumericReading("22.4"), 22.4);
-  assert.deepEqual(parseHistoricalReadings("20.1\r\n20.4\r\n"), [20.1, 20.4]);
+  assert.deepEqual(parseHistoricalReadings("20.1\r\n20.4\r\n"), [
+    { value: 20.1, timestamp: null },
+    { value: 20.4, timestamp: null },
+  ]);
   assert.deepEqual(parseHistoricalReadings(""), []);
   assert.throws(() => parseNumericReading("warm"));
   assert.throws(() => parseHistoricalReadings("20.1\nnot-a-number"));
+});
+
+test("historical readings parse API value and UTC timestamp records", () => {
+  assert.deepEqual(parseHistoricalReadings(
+    "17.4|2026-10-25 20:44:30\r\n17.3|2026-10-25 20:49:30"
+  ), [
+    { value: 17.4, timestamp: Date.parse("2026-10-25T20:44:30Z") },
+    { value: 17.3, timestamp: Date.parse("2026-10-25T20:49:30Z") },
+  ]);
+  assert.throws(() => parseHistoricalReadings("17.4|not-a-time"), /ongeldige tijdsaanduiding/);
 });

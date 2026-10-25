@@ -76,10 +76,19 @@ export function parseHistoricalReadings(text) {
     return [];
   }
 
-  const values = text.split(/\r?\n/).filter(value => value.trim() !== "");
-  const readings = values.map(value => Number(value.trim()));
-  if (readings.some(value => !Number.isFinite(value))) {
-    throw new Error("De historie bevat een ongeldige meetwaarde.");
-  }
-  return readings;
+  return text.split(/\r?\n/).filter(line => line.trim() !== "").map(line => {
+    const [rawValue, ...rawTimestamp] = line.split("|");
+    const value = Number(rawValue.trim());
+    if (!Number.isFinite(value)) {
+      throw new Error("De historie bevat een ongeldige meetwaarde.");
+    }
+
+    const timestampText = rawTimestamp.join("|").trim();
+    const timestamp = timestampText ? parseTimestamp(timestampText) : null;
+    if (timestampText && !Number.isFinite(timestamp)) {
+      throw new Error("De historie bevat een ongeldige tijdsaanduiding.");
+    }
+
+    return { value, timestamp };
+  });
 }
