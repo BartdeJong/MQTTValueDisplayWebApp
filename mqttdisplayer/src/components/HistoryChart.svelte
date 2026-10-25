@@ -8,13 +8,13 @@
 			type: "temps",
 			apiId: "4dq0cg8znc",
 			unit: "°C",
-			color: "#8ce265",
+			color: "#087e73",
 		},
 		Luchtvochtigheid: {
 			type: "hums",
 			apiId: "6oewbmsm96",
 			unit: "%",
-			color: "#8ecae6",
+			color: "#6388cf",
 		},
 	};
 
@@ -112,17 +112,17 @@
 				responsive: true,
 				maintainAspectRatio: true,
 				plugins: {
-					legend: { display: true, labels: { color: "#fff" } },
+					legend: { display: true, labels: { color: "#263b39" } },
 					tooltip: { intersect: false },
 				},
 				scales: {
 					y: {
 						beginAtZero: dataType === "Luchtvochtigheid",
-						title: { display: true, text: endpoint.unit, color: "#fff" },
-						ticks: { color: "#fff" },
+						title: { display: true, text: endpoint.unit, color: "#667b79" },
+						ticks: { color: "#667b79" },
 					},
 					x: {
-						ticks: { maxTicksLimit: 6, color: "#fff" },
+						ticks: { maxTicksLimit: 6, color: "#667b79" },
 					},
 				},
 			},
@@ -175,11 +175,10 @@
 <style>
 	.history {
 		padding: 0.75rem;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.18);
-		backdrop-filter: blur(8px);
-		color: #fff;
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		background: #fff;
+		color: var(--color-ink);
 	}
 
 	.history-heading {
@@ -198,11 +197,16 @@
 	.history-toggle {
 		min-height: 40px;
 		padding: 0.4rem 0.7rem;
-		border: 1px solid rgba(255, 255, 255, 0.4);
-		border-radius: 6px;
-		background: rgba(0, 152, 121, 0.35);
-		color: #fff;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: #f6f9f8;
+		color: var(--color-primary-dark);
 		cursor: pointer;
+	}
+
+	.history-toggle:hover {
+		border-color: #acd2ca;
+		background: #eff8f5;
 	}
 
 	.history-message {

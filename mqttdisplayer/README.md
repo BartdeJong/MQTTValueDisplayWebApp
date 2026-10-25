@@ -36,5 +36,6 @@ Node.js test runner.
 
 The production build retains the `/WeatherProd/` base path, existing manifest URL,
 `service-worker.js` location and scope, `locationsData` cookie, and
-`userBackgroundImage` local-storage key so previously installed PWAs can keep their
-settings and receive the new app shell when their service worker updates.
+`userBackgroundImage` local-storage key so previously installed PWAs keep their
+stored data and receive the new app shell when their service worker updates. The
+dashboard no longer displays or manages background images.

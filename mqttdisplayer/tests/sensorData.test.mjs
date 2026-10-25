@@ -12,7 +12,8 @@ import {
 test("sensor freshness has fresh, stale, offline, and unknown states", () => {
   const now = 1_000_000;
   assert.equal(getSensorFreshness(now - 60_000, now).state, "fresh");
-  assert.equal(getSensorFreshness(now - 6 * 60_000, now).state, "stale");
+  assert.equal(getSensorFreshness(now - 9 * 60_000, now).state, "fresh");
+  assert.equal(getSensorFreshness(now - 10 * 60_000, now).state, "stale");
   assert.equal(getSensorFreshness(now - 31 * 60_000, now).state, "offline");
   assert.equal(getSensorFreshness("invalid", now).state, "unknown");
 });

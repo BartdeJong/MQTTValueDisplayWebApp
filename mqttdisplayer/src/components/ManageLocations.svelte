@@ -3,7 +3,6 @@
 	import { DEFAULT_LOCATIONS, formatLocationsCookie, parseLocationsCookie } from "../utils/locations.mjs";
 
 	const AVAILABLE_LOCATIONS_URL = "https://c4c6uk1i70.execute-api.eu-central-1.amazonaws.com/prod/read-locations-cdk";
-	const DEFAULT_BACKGROUND = `${import.meta.env.BASE_URL}img/background.jpeg`;
 
 	let { onCancel, onSaved } = $props();
 	let locations = $state(DEFAULT_LOCATIONS.map(location => ({ ...location })));
@@ -14,17 +13,9 @@
 	let loadError = $state("");
 	let formError = $state("");
 	let saveError = $state("");
-	let backgroundError = $state("");
-	let backgroundImageUrl = $state(DEFAULT_BACKGROUND);
 	let abortController;
 
 	onMount(() => {
-		try {
-			backgroundImageUrl = localStorage.getItem("userBackgroundImage") || DEFAULT_BACKGROUND;
-		} catch (error) {
-			backgroundError = "Lokale opslag is niet beschikbaar; de standaardachtergrond wordt gebruikt.";
-			console.error("Saved background could not be loaded:", error);
-		}
 		try {
 			const savedLocations = parseLocationsCookie(document.cookie);
 			if (savedLocations) locations = savedLocations;
@@ -93,10 +84,10 @@
 		possibleLocations = possibleLocations.filter(location => location.text !== deviceId);
 	}
 
-	function removeLocation(index) {
-		const location = locations[index];
-		if (!window.confirm(`Locatie "${location.name}" verwijderen?`)) return;
-		locations = locations.filter((_, locationIndex) => locationIndex !== index);
+	function removeLocation(deviceId) {
+		const location = locations.find(item => item.deviceId === deviceId);
+		if (!location || !window.confirm(`Locatie "${location.name}" verwijderen?`)) return;
+		locations = locations.filter(item => item.deviceId !== deviceId);
 	}
 
 	function saveAndReturn() {
@@ -113,316 +104,666 @@
 	}
 </script>
 
-<main class="manage-locations" style={`--dashboard-background: url(${JSON.stringify(backgroundImageUrl)})`}>
-	<header class="page-heading">
-		<h1>Locaties beheren</h1>
-		<p>Kies de sensoren die op het dashboard zichtbaar moeten zijn.</p>
+<main class="locations-page">
+	<header class="topbar">
+		<a class="brand" href="#/" aria-label="MQTT Waarden dashboard">
+			<span class="brand-mark" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none">
+					<path d="M12 3v10.2a3.8 3.8 0 1 0 3 3.7V3a1.5 1.5 0 0 0-3 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M10 7h2M10 10h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+				</svg>
+			</span>
+			<span class="brand-name">MQTT Waarden</span>
+		</a>
+		<button class="button button--secondary" type="button" onclick={onCancel}>
+			<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<path d="m14.5 5-7 7 7 7M8 12h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg>
+			Dashboard
+		</button>
 	</header>
 
-	<section class="form-container" aria-labelledby="add-location-heading">
-		<h2 id="add-location-heading">Locatie toevoegen</h2>
-		{#if isLoading}
-			<p role="status">Beschikbare sensoren laden…</p>
-		{/if}
-		{#if loadError}
-			<p class="location-error" role="alert">{loadError}</p>
-			<button class="text-button" type="button" onclick={getLocations}>Opnieuw proberen</button>
-		{:else if !isLoading && possibleLocations.length === 0}
-			<p>Er zijn geen nieuwe sensoren beschikbaar.</p>
-		{:else}
-			<form onsubmit={addLocation}>
-				<fieldset>
-					<legend>Beschikbare sensor</legend>
-					<div class="radio-options">
-						{#each possibleLocations as option (option.text)}
-							<div class="radio-option">
-								<input
-									id={option.id}
-									class="radio-input"
-									bind:group={selected}
-									type="radio"
-									name="device-location"
-									value={option.text}
-									required
-								>
-								<label class:selected={selected === option.text} for={option.id}>{option.text}</label>
-							</div>
-						{/each}
-					</div>
-				</fieldset>
-				<label for="new-location-name">Weergavenaam (optioneel)</label>
-				<input
-					id="new-location-name"
-					bind:value={newLocationName}
-					type="text"
-					maxlength="80"
-					autocomplete="off"
-					placeholder="Bijvoorbeeld: Serre"
-				>
-				<button class="styled-button" type="submit" disabled={!selected}>
-					Locatie toevoegen
-				</button>
-			</form>
-		{/if}
-		{#if formError}
-			<p class="location-error" role="alert">{formError}</p>
-		{/if}
+	<section class="page-intro">
+		<p class="eyebrow">INSTELLINGEN</p>
+		<h1>Locaties beheren</h1>
+		<p>Kies welke sensoren je wilt volgen en geef ze een herkenbare naam.</p>
 	</section>
 
-	<section class="table-container" aria-labelledby="saved-locations-heading">
-		<h2 id="saved-locations-heading">Ingestelde locaties</h2>
-		{#if locations.length === 0}
-			<p>Nog geen locaties ingesteld.</p>
-		{:else}
-			<div class="table-scroll">
-				<table class="styled-table">
-					<thead>
-						<tr>
-							<th scope="col">Naam</th>
-							<th scope="col">Sensor-ID</th>
-							<th scope="col">Actie</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each locations as location, index (location.deviceId)}
-							<tr>
-								<td class="largeText">{location.name}</td>
-								<td>{location.deviceId}</td>
-								<td class="centered">
-									<button class="remove-button" type="button" onclick={() => removeLocation(index)}>
-										Verwijderen
-									</button>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
+	<div class="location-layout">
+		<section class="panel add-panel" aria-labelledby="add-location-heading">
+			<div class="panel-heading">
+				<span class="step-number" aria-hidden="true">＋</span>
+				<div>
+					<h2 id="add-location-heading">Locatie toevoegen</h2>
+					<p>Selecteer een beschikbare sensor.</p>
+				</div>
 			</div>
-		{/if}
-	</section>
+
+			{#if isLoading}
+				<p class="inline-message" role="status">Beschikbare sensoren laden…</p>
+			{:else if loadError}
+				<p class="inline-message inline-message--error" role="alert">{loadError}</p>
+				<button class="button button--secondary retry-button" type="button" onclick={getLocations}>Opnieuw proberen</button>
+			{:else if possibleLocations.length === 0}
+				<div class="no-sensors">
+					<span aria-hidden="true">✓</span>
+					<p>Alle beschikbare sensoren zijn al toegevoegd.</p>
+				</div>
+			{:else}
+				<form onsubmit={addLocation}>
+					<fieldset>
+						<legend class="visually-hidden">Beschikbare sensor</legend>
+						<div class="sensor-options">
+							{#each possibleLocations as option (option.text)}
+								<div class="sensor-option">
+									<input
+										id={option.id}
+										bind:group={selected}
+										type="radio"
+										name="device-location"
+										value={option.text}
+										required
+									>
+									<label for={option.id}>
+										<span class="radio-indicator" aria-hidden="true"></span>
+										<span>{option.text}</span>
+									</label>
+								</div>
+							{/each}
+						</div>
+					</fieldset>
+
+					<div class="name-field">
+						<label for="new-location-name">Weergavenaam <span>optioneel</span></label>
+						<input
+							id="new-location-name"
+							bind:value={newLocationName}
+							type="text"
+							maxlength="80"
+							autocomplete="off"
+							placeholder="Bijvoorbeeld: Serre"
+						>
+					</div>
+
+					{#if formError}
+						<p class="inline-message inline-message--error" role="alert">{formError}</p>
+					{/if}
+					<button class="button button--primary add-button" type="submit" disabled={!selected}>
+						Locatie toevoegen
+						<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+							<path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</button>
+				</form>
+			{/if}
+		</section>
+
+		<section class="panel saved-panel" aria-labelledby="saved-locations-heading">
+			<div class="panel-heading saved-heading">
+				<span class="step-number step-number--mint" aria-hidden="true">
+					<svg viewBox="0 0 24 24" fill="none">
+						<path d="m5 12 4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</span>
+				<div>
+					<h2 id="saved-locations-heading">Ingestelde locaties</h2>
+					<p>{locations.length} {locations.length === 1 ? "sensor actief" : "sensoren actief"} op je dashboard.</p>
+				</div>
+			</div>
+
+			{#if locations.length === 0}
+				<div class="empty-list">
+					<p>Je hebt nog geen locaties ingesteld.</p>
+				</div>
+			{:else}
+				<ul class="location-list">
+					{#each locations as location (location.deviceId)}
+						<li class="location-item">
+							<span class="location-icon" aria-hidden="true">
+								<svg viewBox="0 0 24 24" fill="none">
+									<path d="M3.5 10.4 12 3l8.5 7.4v9.1a1 1 0 0 1-1 1h-5.2v-6h-4.6v6H4.5a1 1 0 0 1-1-1v-9.1Z" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+								</svg>
+							</span>
+							<span class="location-description">
+								<strong>{location.name}</strong>
+								<small>{location.deviceId}</small>
+							</span>
+							<button
+								class="remove-button"
+								type="button"
+								aria-label={`Verwijder ${location.name}`}
+								onclick={() => removeLocation(location.deviceId)}
+							>
+								<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+									<path d="M4 7h16M10 11v6m4-6v6M6.5 7l.8 13h9.4l.8-13M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+								</svg>
+								<span class="visually-hidden">Verwijderen</span>
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</section>
+	</div>
 
 	{#if saveError}
-		<p class="location-error" role="alert">{saveError}</p>
+		<p class="inline-message inline-message--error save-error" role="alert">{saveError}</p>
 	{/if}
-	{#if backgroundError}
-		<p class="location-error" role="alert">{backgroundError}</p>
-	{/if}
-	<div class="location-actions">
-		<button class="styled-button" type="button" onclick={saveAndReturn}>
-			Opslaan en terug naar dashboard
-		</button>
-		<button class="styled-button" type="button" onclick={onCancel}>Annuleren</button>
-	</div>
+	<footer class="page-actions">
+		<p>Je wijzigingen worden op dit apparaat opgeslagen.</p>
+		<div>
+			<button class="button button--secondary" type="button" onclick={onCancel}>Annuleren</button>
+			<button class="button button--primary" type="button" onclick={saveAndReturn}>
+				Opslaan en terug
+				<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+			</button>
+		</div>
+	</footer>
 </main>
 
 <style>
-	.manage-locations {
-		min-height: 100vh;
-		box-sizing: border-box;
+	.locations-page {
+		width: min(100% - 48px, 1120px);
+		margin: 0 auto;
+		padding: 28px 0 56px;
+	}
+
+	.topbar {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 10px;
-		padding: 10px;
-		background-color: #171717;
-		background-image: var(--dashboard-background);
-		background-position: center;
-		background-size: cover;
-		background-repeat: no-repeat;
-		background-attachment: fixed;
-		transition: background-image 0.25s ease-in-out;
+		justify-content: space-between;
+		gap: 20px;
+		margin-bottom: 42px;
 	}
 
-	.manage-locations .page-heading,
-	.manage-locations .form-container,
-	.manage-locations .table-container {
-		width: min(100%, 900px);
-		box-sizing: border-box;
-		padding: 16px;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 12px;
-		background: rgba(255, 255, 255, 0.18);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
-		color: #fff;
+	.brand-mark svg {
+		width: 25px;
+		height: 25px;
 	}
 
-	.manage-locations .page-heading {
-		text-align: center;
-	}
-
-	.manage-locations h1,
-	.manage-locations h2 {
-		margin-top: 0;
-	}
-
-	.manage-locations fieldset {
-		margin: 0 0 1rem;
-		padding: 0.75rem;
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		border-radius: 8px;
-	}
-
-	.radio-options {
-		display: flex;
-		flex-wrap: wrap;
+	.button {
+		display: inline-flex;
+		min-height: 44px;
+		align-items: center;
+		justify-content: center;
 		gap: 8px;
-		margin-top: 8px;
+		padding: 0 16px;
+		border: 1px solid transparent;
+		border-radius: 11px;
+		font-size: 0.88rem;
+		font-weight: 650;
+		cursor: pointer;
+		transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
 	}
 
-	.radio-option input {
+	.button:hover:not(:disabled) {
+		transform: translateY(-1px);
+	}
+
+	.button svg {
+		width: 17px;
+		height: 17px;
+	}
+
+	.button--secondary {
+		border-color: var(--color-border);
+		background: white;
+		color: var(--color-ink);
+	}
+
+	.button--secondary:hover {
+		border-color: #b8d8d1;
+		background: #fafffe;
+	}
+
+	.button--primary {
+		background: var(--color-primary);
+		color: white;
+	}
+
+	.button--primary:hover:not(:disabled) {
+		background: var(--color-primary-dark);
+	}
+
+	.button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.page-intro {
+		margin-bottom: 26px;
+	}
+
+	.eyebrow {
+		margin: 0 0 9px;
+		color: var(--color-primary);
+		font-size: 0.72rem;
+		font-weight: 750;
+		letter-spacing: 0.12em;
+	}
+
+	.page-intro h1 {
+		margin: 0;
+		font-size: clamp(2rem, 4vw, 2.65rem);
+		font-weight: 720;
+		letter-spacing: -0.055em;
+		line-height: 1.15;
+	}
+
+	.page-intro > p:last-child {
+		margin: 9px 0 0;
+		color: var(--color-muted);
+		font-size: 0.98rem;
+	}
+
+	.location-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+		align-items: start;
+		gap: 18px;
+	}
+
+	.panel {
+		min-width: 0;
+		padding: 24px;
+		border: 1px solid var(--color-border);
+		border-radius: 18px;
+		background: white;
+		box-shadow: var(--shadow-card);
+	}
+
+	.panel-heading {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin-bottom: 21px;
+	}
+
+	.step-number {
+		display: grid;
+		width: 42px;
+		height: 42px;
+		flex: 0 0 auto;
+		place-items: center;
+		border-radius: 13px;
+		background: #e9f1ff;
+		color: #466bb5;
+		font-size: 1.3rem;
+	}
+
+	.step-number--mint {
+		background: var(--color-accent);
+		color: var(--color-primary);
+	}
+
+	.step-number svg {
+		width: 21px;
+		height: 21px;
+	}
+
+	.panel-heading h2 {
+		margin: 0;
+		font-size: 1.08rem;
+		font-weight: 720;
+		letter-spacing: -0.02em;
+	}
+
+	.panel-heading p {
+		margin: 5px 0 0;
+		color: var(--color-muted);
+		font-size: 0.82rem;
+	}
+
+	fieldset {
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+
+	.sensor-options {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 9px;
+		max-height: 330px;
+		overflow-y: auto;
+		padding: 2px 2px 10px;
+	}
+
+	.sensor-option {
+		position: relative;
+		min-width: 0;
+	}
+
+	.sensor-option input {
 		position: absolute;
 		width: 1px;
 		height: 1px;
-		opacity: 0;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		clip-path: inset(50%);
 	}
 
-	.radio-option label {
-		display: inline-block;
-		padding: 8px 12px;
-		border: 2px solid #009879;
-		border-radius: 6px;
-		background: rgba(255, 255, 255, 0.18);
-		backdrop-filter: blur(5px);
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+	.sensor-option label {
+		display: flex;
+		min-height: 44px;
+		align-items: center;
+		gap: 9px;
+		padding: 8px 10px;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		background: #fff;
+		color: #405653;
+		font-size: 0.82rem;
+		font-weight: 600;
 		cursor: pointer;
+		transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
 	}
 
-	.radio-option label.selected {
-		border-color: #efbf04;
-		background: rgba(255, 255, 255, 0.28);
-		color: #efbf04;
+	.sensor-option label:hover {
+		border-color: #acd2ca;
+		background: #f9fdfb;
 	}
 
-	.radio-option input:focus-visible + label {
-		outline: 3px solid #efbf04;
-		outline-offset: 3px;
+	.radio-indicator {
+		display: grid;
+		width: 17px;
+		height: 17px;
+		flex: 0 0 auto;
+		place-items: center;
+		border: 1.5px solid #b4c4c0;
+		border-radius: 50%;
 	}
 
-	.manage-locations input[type="text"] {
-		display: block;
-		box-sizing: border-box;
+	.radio-indicator::after {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: white;
+		content: "";
+		transform: scale(0);
+		transition: transform 120ms ease;
+	}
+
+	.sensor-option input:checked + label {
+		border-color: var(--color-primary);
+		background: #eff8f5;
+		color: var(--color-primary-dark);
+	}
+
+	.sensor-option input:checked + label .radio-indicator {
+		border-color: var(--color-primary);
+		background: var(--color-primary);
+	}
+
+	.sensor-option input:checked + label .radio-indicator::after {
+		transform: scale(1);
+	}
+
+	.sensor-option input:focus-visible + label {
+		outline: 3px solid #28a897;
+		outline-offset: 2px;
+	}
+
+	.name-field {
+		margin-top: 13px;
+	}
+
+	.name-field label {
+		display: flex;
+		align-items: baseline;
+		gap: 7px;
+		font-size: 0.82rem;
+		font-weight: 650;
+	}
+
+	.name-field label span {
+		color: #899a97;
+		font-size: 0.75rem;
+		font-weight: 450;
+	}
+
+	.name-field input {
 		width: 100%;
-		min-height: 44px;
-		margin: 0.4rem 0 1rem;
-		padding: 10px 14px;
-		border: 1px solid rgba(255, 255, 255, 0.35);
-		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.2);
-		backdrop-filter: blur(8px);
-		color: #fff;
-		text-align: center;
+		min-height: 45px;
+		margin-top: 8px;
+		padding: 0 12px;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		background: #fbfcfc;
+		color: var(--color-ink);
 	}
 
-	.manage-locations input[type="text"]::placeholder {
-		color: rgba(255, 255, 255, 0.75);
+	.name-field input::placeholder {
+		color: #9aa9a6;
 	}
 
-	.manage-locations input[type="text"]:focus {
-		border-color: #009879;
-		box-shadow: 0 0 0 2px rgba(0, 152, 121, 0.25);
+	.name-field input:focus {
+		border-color: var(--color-primary);
+		background: white;
 	}
 
-	.styled-button,
-	.remove-button,
-	.text-button {
-		min-height: 44px;
-		border: 1px solid rgba(255, 255, 255, 0.25);
-		border-radius: 8px;
-		cursor: pointer;
+	.add-button {
+		width: 100%;
+		margin-top: 15px;
 	}
 
-	.styled-button {
-		display: inline-flex;
+	.inline-message {
+		padding: 11px 12px;
+		border-radius: 10px;
+		background: #eff8f5;
+		color: var(--color-primary-dark);
+		font-size: 0.85rem;
+	}
+
+	.inline-message--error {
+		background: #fff0ef;
+		color: var(--color-danger);
+	}
+
+	.retry-button {
+		width: 100%;
+	}
+
+	.no-sensors,
+	.empty-list {
+		display: flex;
+		min-height: 130px;
 		align-items: center;
 		justify-content: center;
-		box-sizing: border-box;
-		width: min(100%, 240px);
-		padding: 8px 12px;
-		background: rgba(0, 152, 121, 0.35);
-		backdrop-filter: blur(8px);
-		color: #fff;
-		font-weight: 600;
+		gap: 10px;
+		padding: 20px;
+		border: 1px dashed #d1dfdb;
+		border-radius: 12px;
+		color: var(--color-muted);
 		text-align: center;
 	}
 
-	.styled-button:hover:not(:disabled) {
-		background: rgba(0, 152, 121, 0.6);
+	.no-sensors > span {
+		display: grid;
+		width: 27px;
+		height: 27px;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--color-accent);
+		color: var(--color-primary);
+		font-weight: 750;
 	}
 
-	.styled-button:disabled {
-		cursor: not-allowed;
-		opacity: 0.55;
+	.no-sensors p,
+	.empty-list p {
+		margin: 0;
+		font-size: 0.86rem;
 	}
 
-	.manage-locations .table-scroll {
-		overflow-x: auto;
-		border: 1px solid rgba(255, 255, 255, 0.2);
+	.saved-heading {
+		margin-bottom: 17px;
+	}
+
+	.location-list {
+		display: grid;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.location-item {
+		display: flex;
+		min-width: 0;
+		align-items: center;
+		gap: 10px;
+		padding: 10px;
+		border: 1px solid #edf1ef;
 		border-radius: 12px;
-		background: rgba(255, 255, 255, 0.18);
-		backdrop-filter: blur(8px);
+		background: #fbfcfc;
 	}
 
-	.manage-locations .styled-table {
-		width: 100%;
-		border-collapse: collapse;
-		table-layout: fixed;
+	.location-icon {
+		display: grid;
+		width: 36px;
+		height: 36px;
+		flex: 0 0 auto;
+		place-items: center;
+		border-radius: 11px;
+		background: #eaf5f1;
+		color: var(--color-primary);
 	}
 
-	.manage-locations .styled-table th,
-	.manage-locations .styled-table td {
-		padding: 6px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-		text-align: left;
-		overflow-wrap: anywhere;
+	.location-icon svg {
+		width: 19px;
+		height: 19px;
 	}
 
-	.manage-locations .styled-table th {
-		background: rgba(0, 152, 121, 0.35);
-		color: #fff;
+	.location-description {
+		display: block;
+		min-width: 0;
+		flex: 1;
 	}
 
-	.manage-locations .styled-table tbody tr:nth-child(even) {
-		background: rgba(255, 255, 255, 0.07);
+	.location-description strong,
+	.location-description small {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.location-description strong {
+		font-size: 0.84rem;
+		font-weight: 680;
+	}
+
+	.location-description small {
+		margin-top: 3px;
+		color: var(--color-muted);
+		font-size: 0.72rem;
 	}
 
 	.remove-button {
-		padding: 6px 10px;
-		border-color: rgba(255, 255, 255, 0.25);
-		background: rgba(152, 0, 55, 0.4);
-		color: #fff;
+		display: grid;
+		width: 36px;
+		height: 36px;
+		flex: 0 0 auto;
+		place-items: center;
+		border: 0;
+		border-radius: 9px;
+		background: transparent;
+		color: #899a97;
+		cursor: pointer;
 	}
 
 	.remove-button:hover {
-		background: rgba(152, 0, 55, 0.7);
+		background: #fff0ef;
+		color: var(--color-danger);
 	}
 
-	.text-button {
-		padding: 0.4rem 0.75rem;
-		background: transparent;
-		color: #fff;
-		text-decoration: underline;
+	.remove-button svg {
+		width: 18px;
+		height: 18px;
 	}
 
-	.location-actions {
+	.page-actions {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20px;
+		margin-top: 22px;
+		padding: 18px 2px;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.page-actions p {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: 0.82rem;
+	}
+
+	.page-actions > div {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.75rem;
+		gap: 9px;
 	}
 
-	.location-error {
-		color: #ffb4b4;
+	.save-error {
+		margin-top: 18px;
 	}
 
-	.centered {
-		text-align: center !important;
+	@media (max-width: 850px) {
+		.locations-page {
+			width: min(100% - 32px, 620px);
+			padding-top: 18px;
+		}
+
+		.topbar {
+			margin-bottom: 32px;
+		}
+
+		.location-layout {
+			grid-template-columns: 1fr;
+		}
 	}
 
-	@media (max-width: 600px) {
-		.manage-locations {
-			padding: 6px;
+	@media (max-width: 520px) {
+		.brand {
+			gap: 9px;
+		}
+
+		.brand-mark {
+			width: 40px;
+			height: 40px;
+		}
+
+		.brand-name {
+			font-size: 0.9rem;
+		}
+
+		.topbar > .button {
+			padding: 0 10px;
+			font-size: 0.8rem;
+		}
+
+		.panel {
+			padding: 17px;
+			border-radius: 15px;
+		}
+
+		.sensor-options {
+			grid-template-columns: 1fr;
+			max-height: 260px;
+		}
+
+		.page-actions {
+			align-items: stretch;
+			flex-direction: column;
+		}
+
+		.page-actions > div {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
 		}
 	}
 </style>

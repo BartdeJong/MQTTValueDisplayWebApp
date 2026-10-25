@@ -1,11 +1,25 @@
 :root {
-	font-family: "Segoe UI", Arial, sans-serif;
-	font-synthesis: none;
+	font-family: Inter, "Segoe UI", Arial, sans-serif;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	color: #fff;
-	background: #171717;
+	color: #172b2a;
+	background: #f4f7f6;
+	font-weight: 400;
+	font-synthesis: none;
+	--color-ink: #172b2a;
+	--color-muted: #667b79;
+	--color-primary: #087e73;
+	--color-primary-dark: #06665e;
+	--color-accent: #d8f2eb;
+	--color-border: #e1eae7;
+	--color-surface: #fff;
+	--color-danger: #b54747;
+	--shadow-card: 0 12px 30px rgba(26, 57, 52, 0.07);
+}
+
+* {
+	box-sizing: border-box;
 }
 
 html,
@@ -16,7 +30,10 @@ body,
 }
 
 body {
+	min-width: 320px;
 	overflow-x: hidden;
+	background: #f4f7f6;
+	color: var(--color-ink);
 }
 
 button,
@@ -25,11 +42,15 @@ input {
 	font: inherit;
 }
 
+button {
+	color: inherit;
+}
+
 button:focus-visible,
 select:focus-visible,
 input:focus-visible,
 a:focus-visible {
-	outline: 3px solid #efbf04;
+	outline: 3px solid #28a897;
 	outline-offset: 3px;
 }
 
@@ -45,19 +66,54 @@ a:focus-visible {
 	border: 0;
 }
 
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	color: var(--color-ink);
+	text-decoration: none;
+}
+
+.brand-mark {
+	display: grid;
+	width: 44px;
+	height: 44px;
+	place-items: center;
+	border-radius: 14px;
+	background: var(--color-primary);
+	color: white;
+}
+
+.brand-name {
+	font-size: 1rem;
+	font-weight: 750;
+	letter-spacing: -0.02em;
+}
+
 .sensor-status {
-	display: block;
-	font-size: 0.8rem;
-	font-weight: 500;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	width: fit-content;
+	font-size: 0.78rem;
+	font-weight: 650;
+}
+
+.sensor-status::before {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: currentColor;
+	content: "";
 }
 
 .sensor-status--fresh,
 .sensor-status--connected {
-	color: #8ce265;
+	color: #087e73;
 }
 
 .sensor-status--stale {
-	color: #efbf04;
+	color: #a87513;
 }
 
 .sensor-status--offline,
@@ -65,23 +121,15 @@ a:focus-visible {
 .sensor-status--error,
 .sensor-status--unknown,
 .sensor-status--connecting {
-	color: #ff7777;
+	color: #b54747;
 }
 
 .sensor-row--stale {
-	background: rgba(239, 191, 4, 0.12);
+	border-color: #f0dcb3 !important;
 }
 
-.largeText {
-	font-size: xx-large;
-}
-
-@media (max-width: 600px) {
-	.sizeUp {
-		font-size: medium;
-	}
-
-	.largeText {
-		font-size: large;
+@media (prefers-reduced-motion: no-preference) {
+	* {
+		scroll-behavior: smooth;
 	}
 }

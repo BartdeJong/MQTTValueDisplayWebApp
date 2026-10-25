@@ -3,26 +3,12 @@
 	import { DEFAULT_LOCATIONS, parseLocationsCookie } from "../utils/locations.mjs";
 	import SensorRow from "./SensorRow.svelte";
 
-	const DEFAULT_BACKGROUND = `${import.meta.env.BASE_URL}img/background.jpeg`;
-	const MAX_BACKGROUND_BYTES = 10 * 1024 * 1024;
-	const MAX_BACKGROUND_DIMENSION = 1280;
-
 	let { onManageLocations } = $props();
 	let locations = $state(DEFAULT_LOCATIONS.map(location => ({ ...location })));
 	let locationsError = $state("");
 	let recordAmount = $state(288);
-	let backgroundImageUrl = $state(DEFAULT_BACKGROUND);
-	let backgroundError = $state("");
-	let backgroundSaved = $state("");
 
 	onMount(() => {
-		try {
-			backgroundImageUrl = localStorage.getItem("userBackgroundImage") || DEFAULT_BACKGROUND;
-		} catch (error) {
-			backgroundError = "Lokale opslag is niet beschikbaar; de standaardachtergrond wordt gebruikt.";
-			console.error("Saved background could not be loaded:", error);
-		}
-
 		try {
 			const savedLocations = parseLocationsCookie(document.cookie);
 			if (savedLocations) locations = savedLocations;
@@ -31,338 +17,434 @@
 			console.error("Saved locations could not be loaded:", error);
 		}
 	});
-
-	async function handleBackgroundUpload(event) {
-		const input = event.currentTarget;
-		const file = input.files?.[0];
-		backgroundError = "";
-		backgroundSaved = "";
-		if (!file) return;
-
-		try {
-			if (!file.type.startsWith("image/")) {
-				throw new Error("Kies een afbeeldingsbestand.");
-			}
-			if (file.size > MAX_BACKGROUND_BYTES) {
-				throw new Error("De afbeelding is groter dan 10 MB.");
-			}
-
-			const objectUrl = URL.createObjectURL(file);
-			const image = new Image();
-			try {
-				await new Promise((resolve, reject) => {
-					image.onload = resolve;
-					image.onerror = () => reject(new Error("De afbeelding kan niet worden geopend."));
-					image.src = objectUrl;
-				});
-			} finally {
-				URL.revokeObjectURL(objectUrl);
-			}
-
-			const scale = Math.min(
-				1,
-				MAX_BACKGROUND_DIMENSION / image.width,
-				MAX_BACKGROUND_DIMENSION / image.height
-			);
-			const canvas = document.createElement("canvas");
-			canvas.width = Math.max(1, Math.round(image.width * scale));
-			canvas.height = Math.max(1, Math.round(image.height * scale));
-			const context = canvas.getContext("2d");
-			if (!context) throw new Error("De afbeelding kon niet worden verwerkt.");
-			context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-			const compressedImage = canvas.toDataURL("image/jpeg", 0.7);
-			localStorage.setItem("userBackgroundImage", compressedImage);
-			backgroundImageUrl = compressedImage;
-			backgroundSaved = "De achtergrond is opgeslagen op dit apparaat.";
-		} catch (error) {
-			backgroundError = error.name === "QuotaExceededError"
-				? "Er is onvoldoende opslagruimte om deze achtergrond op te slaan."
-				: error.message || "De achtergrond kon niet worden opgeslagen.";
-			console.error("Background image could not be saved:", error);
-		} finally {
-			input.value = "";
-		}
-	}
-
-	function resetBackground() {
-		backgroundError = "";
-		backgroundSaved = "";
-		try {
-			localStorage.removeItem("userBackgroundImage");
-			backgroundImageUrl = DEFAULT_BACKGROUND;
-			backgroundSaved = "De standaardachtergrond is hersteld.";
-		} catch (error) {
-			backgroundError = "De opgeslagen achtergrond kon niet worden verwijderd.";
-			console.error("Background image could not be reset:", error);
-		}
-	}
 </script>
 
-<main class="home sizeUp" style={`--dashboard-background: url(${JSON.stringify(backgroundImageUrl)})`}>
-	<section class="table-container" aria-labelledby="sensor-table-title">
-		<h1 id="sensor-table-title" class="visually-hidden">Temperatuur en luchtvochtigheid</h1>
-		<table class="styled-table">
-			<caption class="visually-hidden">Temperatuur en luchtvochtigheid van de ingestelde locaties</caption>
-			<colgroup>
-				<col class="location-column">
-				<col class="temperature-column">
-				<col class="humidity-column">
-			</colgroup>
-			<thead>
-				<tr>
-					<th scope="col"><span class="visually-hidden">Locatie</span></th>
-					<th scope="col">
-						<img src={`${import.meta.env.BASE_URL}img/temperature.png`} alt="Temperatuur" class="heading-image">
-					</th>
-					<th scope="col">
-						<img src={`${import.meta.env.BASE_URL}img/humidity.png`} alt="Luchtvochtigheid" class="heading-image">
-					</th>
-				</tr>
-			</thead>
-			{#each locations as location (location.deviceId)}
-				<SensorRow name={location.name} deviceId={location.deviceId} period={recordAmount} />
-			{:else}
-				<tbody>
-					<tr>
-						<td colspan="3">Geen locaties ingesteld. Voeg een locatie toe via Locaties beheren.</td>
-					</tr>
-				</tbody>
-			{/each}
-		</table>
-	</section>
-
-	<section class="control-panel" aria-labelledby="settings-title">
-		<h2 id="settings-title">Instellingen</h2>
-		<div class="control-field">
-			<label for="date-select">Geschiedenis weergeven over</label>
-			<select id="date-select" bind:value={recordAmount}>
-				<option value={24}>2 uur</option>
-				<option value={288}>1 dag</option>
-				<option value={2016}>1 week</option>
-			</select>
-		</div>
-		<button class="styled-button" type="button" onclick={onManageLocations}>
+<main class="dashboard-page">
+	<header class="topbar">
+		<a class="brand" href="#/" aria-label="MQTT Waarden dashboard">
+			<span class="brand-mark" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none">
+					<path d="M12 3v10.2a3.8 3.8 0 1 0 3 3.7V3a1.5 1.5 0 0 0-3 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M10 7h2M10 10h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+				</svg>
+			</span>
+			<span class="brand-name">MQTT Waarden</span>
+		</a>
+		<button class="button button--secondary topbar-action" type="button" onclick={onManageLocations}>
+			<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+			</svg>
 			Locaties beheren
 		</button>
-		<label class="styled-button upload-wrapper" for="background-upload">
-			📁 Achtergrondafbeelding kiezen
-			<input
-				id="background-upload"
-				type="file"
-				accept="image/*"
-				onchange={handleBackgroundUpload}
-			>
-		</label>
-		<button class="styled-button" type="button" onclick={resetBackground}>
-			Standaardachtergrond herstellen
-		</button>
-		{#if backgroundError}
-			<p class="feedback feedback--error" role="alert">{backgroundError}</p>
-		{:else if backgroundSaved}
-			<p class="feedback" role="status">{backgroundSaved}</p>
-		{/if}
+	</header>
+
+	<section class="welcome-panel" aria-labelledby="dashboard-title">
+		<div>
+			<p class="eyebrow">THUISKLIMAAT</p>
+			<h1 id="dashboard-title">Binnenklimaat</h1>
+			<p class="welcome-copy">Temperatuur en luchtvochtigheid, helder in beeld.</p>
+		</div>
+		<div class="location-count" aria-label={`${locations.length} ingestelde locaties`}>
+			<span class="count-icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none">
+					<path d="M19 10.2c0 5-7 10.3-7 10.3S5 15.2 5 10.2a7 7 0 1 1 14 0Z" stroke="currentColor" stroke-width="1.7"/>
+					<circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+				</svg>
+			</span>
+			<span><strong>{locations.length}</strong><small>locaties</small></span>
+		</div>
+	</section>
+
+	<section class="sensor-section" aria-labelledby="locations-heading">
+		<div class="section-heading">
+			<div>
+				<h2 id="locations-heading">Jouw locaties</h2>
+				<p>Kies een sensor om de meetgeschiedenis te bekijken.</p>
+			</div>
+			<label class="period-control" for="date-select">
+				<span>Geschiedenis</span>
+				<select id="date-select" bind:value={recordAmount}>
+					<option value={24}>2 uur</option>
+					<option value={288}>1 dag</option>
+					<option value={2016}>1 week</option>
+				</select>
+			</label>
+		</div>
+
 		{#if locationsError}
-			<p class="feedback feedback--error" role="alert">{locationsError}</p>
+			<p class="message message--error" role="alert">{locationsError}</p>
+		{/if}
+
+		{#if locations.length === 0}
+			<div class="empty-state">
+				<span class="empty-icon" aria-hidden="true">
+					<svg viewBox="0 0 24 24" fill="none">
+						<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+					</svg>
+				</span>
+				<h3>Nog geen locaties</h3>
+				<p>Voeg een sensor toe om metingen te zien.</p>
+				<button class="button button--primary" type="button" onclick={onManageLocations}>Locatie toevoegen</button>
+			</div>
+		{:else}
+			<div class="sensor-grid">
+				{#each locations as location (location.deviceId)}
+					<SensorRow name={location.name} deviceId={location.deviceId} period={recordAmount} />
+				{/each}
+			</div>
 		{/if}
 	</section>
 </main>
 
 <style>
-	.home {
-		min-height: 100vh;
-		box-sizing: border-box;
+	.dashboard-page {
+		width: min(100% - 48px, 1120px);
+		margin: 0 auto;
+		padding: 28px 0 64px;
+	}
+
+	.topbar {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 10px;
-		padding: 10px;
-		background-color: #171717;
-		background-image: var(--dashboard-background);
-		background-position: center;
-		background-size: cover;
-		background-repeat: no-repeat;
-		background-attachment: fixed;
-		transition: background-image 0.25s ease-in-out;
+		justify-content: space-between;
+		gap: 20px;
+		margin-bottom: 36px;
 	}
 
-	.table-container {
-		width: 100%;
-		max-width: 900px;
-		overflow-x: auto;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 12px;
-		background: rgba(255, 255, 255, 0.22);
-		backdrop-filter: blur(10px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+	.brand-mark svg {
+		width: 25px;
+		height: 25px;
 	}
 
-	.styled-table {
-		width: 100%;
-		border-collapse: collapse;
-		table-layout: fixed;
-		background: rgba(255, 255, 255, 0.12);
-		backdrop-filter: blur(8px);
-		border-radius: 12px;
-		overflow: hidden;
-	}
-
-	.location-column {
-		width: 45%;
-	}
-
-	.temperature-column {
-		width: 28%;
-	}
-
-	.humidity-column {
-		width: 27%;
-	}
-
-	.styled-table th,
-	.styled-table td {
-		padding: 6px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-		overflow-wrap: anywhere;
-		text-align: center;
-	}
-
-	.styled-table th {
-		background: rgba(0, 152, 121, 0.35);
-		color: #fff;
-	}
-
-	.styled-table tbody {
-		background: rgba(25, 25, 25, 0.72);
-		color: #fff;
-	}
-
-	.styled-table tbody tr:nth-child(even) {
-		background: rgba(255, 255, 255, 0.07);
-	}
-
-	.styled-table tbody tr:last-child td {
-		border-bottom: 2px solid #009879;
-	}
-
-	.heading-image {
-		display: block;
-		width: 47px;
-		height: 47px;
-		margin: auto;
-		object-fit: contain;
-	}
-
-	.control-panel {
-		width: 75%;
-		max-width: 720px;
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
+	.button {
+		display: inline-flex;
+		min-height: 44px;
 		align-items: center;
-		gap: 10px;
-		margin: 0 auto 10px;
-		padding: 0 10px 10px;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 16px;
-		background: rgba(255, 255, 255, 0.15);
-		backdrop-filter: blur(12px);
+		justify-content: center;
+		gap: 9px;
+		padding: 0 17px;
+		border: 1px solid transparent;
+		border-radius: 11px;
+		font-size: 0.9rem;
+		font-weight: 650;
+		cursor: pointer;
+		transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
 	}
 
-	.control-panel h2 {
-		margin: 8px 0 0;
+	.button:hover {
+		transform: translateY(-1px);
+	}
+
+	.button svg {
+		width: 18px;
+		height: 18px;
+	}
+
+	.button--secondary {
+		border-color: var(--color-border);
+		background: white;
+		color: var(--color-ink);
+	}
+
+	.button--secondary:hover {
+		border-color: #b8d8d1;
+		background: #fafffe;
+	}
+
+	.button--primary {
+		background: var(--color-primary);
 		color: white;
+	}
+
+	.button--primary:hover {
+		background: var(--color-primary-dark);
+	}
+
+	.welcome-panel {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px;
+		min-height: 202px;
+		margin-bottom: 38px;
+		padding: 34px 40px;
+		overflow: hidden;
+		border: 1px solid #d8eae5;
+		border-radius: 24px;
+		background: linear-gradient(115deg, #e7f5f0 0%, #f0f7f2 58%, #f7f8ee 100%);
+	}
+
+	.eyebrow {
+		margin: 0 0 10px;
+		color: var(--color-primary);
+		font-size: 0.72rem;
+		font-weight: 750;
+		letter-spacing: 0.12em;
+	}
+
+	.welcome-panel h1 {
+		margin: 0;
+		font-size: clamp(2rem, 4vw, 2.8rem);
+		font-weight: 720;
+		letter-spacing: -0.055em;
+		line-height: 1.1;
+	}
+
+	.welcome-copy {
+		margin: 12px 0 0;
+		color: var(--color-muted);
+		font-size: 1rem;
+	}
+
+	.location-count {
+		display: flex;
+		min-width: 145px;
+		align-items: center;
+		gap: 12px;
+		padding: 15px 18px;
+		border: 1px solid rgba(8, 126, 115, 0.12);
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.7);
+	}
+
+	.count-icon {
+		display: grid;
+		width: 40px;
+		height: 40px;
+		place-items: center;
+		border-radius: 12px;
+		background: var(--color-accent);
+		color: var(--color-primary);
+	}
+
+	.count-icon svg {
+		width: 22px;
+		height: 22px;
+	}
+
+	.location-count strong,
+	.location-count small {
+		display: block;
+	}
+
+	.location-count strong {
+		font-size: 1.2rem;
+		line-height: 1.1;
+	}
+
+	.location-count small {
+		margin-top: 4px;
+		color: var(--color-muted);
+		font-size: 0.78rem;
+	}
+
+	.section-heading {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 24px;
+		margin-bottom: 18px;
+	}
+
+	.section-heading h2 {
+		margin: 0;
+		font-size: 1.35rem;
+		font-weight: 720;
+		letter-spacing: -0.03em;
+	}
+
+	.section-heading p {
+		margin: 6px 0 0;
+		color: var(--color-muted);
+		font-size: 0.9rem;
+	}
+
+	.period-control {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		color: var(--color-muted);
+		font-size: 0.83rem;
+		font-weight: 600;
+	}
+
+	.period-control select {
+		min-height: 42px;
+		padding: 0 34px 0 12px;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		background: white;
+		color: var(--color-ink);
+		font-weight: 600;
+	}
+
+	.sensor-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 16px;
+	}
+
+	.message {
+		margin: 12px 0;
+		padding: 12px 14px;
+		border-radius: 10px;
+	}
+
+	.message--error {
+		background: #fff0ef;
+		color: var(--color-danger);
+	}
+
+	.empty-state {
+		display: flex;
+		min-height: 290px;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 32px;
+		border: 1px dashed #cbdad6;
+		border-radius: 20px;
+		background: rgba(255, 255, 255, 0.7);
 		text-align: center;
+	}
+
+	.empty-icon {
+		display: grid;
+		width: 50px;
+		height: 50px;
+		place-items: center;
+		border-radius: 16px;
+		background: var(--color-accent);
+		color: var(--color-primary);
+	}
+
+	.empty-icon svg {
+		width: 24px;
+		height: 24px;
+	}
+
+	.empty-state h3 {
+		margin: 18px 0 0;
 		font-size: 1.1rem;
 	}
 
-	.control-field {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 5px;
-		width: 100%;
+	.empty-state p {
+		margin: 7px 0 18px;
+		color: var(--color-muted);
 	}
 
-	.control-field label {
-		color: #fff;
-	}
-
-	.control-field select {
-		width: 50%;
-		min-height: 40px;
-		padding: 6px 10px;
-		border: 1px solid rgba(255, 255, 255, 0.35);
-		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.25);
-		backdrop-filter: blur(8px);
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-		color: #fff;
-	}
-
-	.control-field option {
-		color: #171717;
-	}
-
-	.styled-button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		box-sizing: border-box;
-		width: min(100%, 240px);
-		min-height: 44px;
-		padding: 8px 12px;
-		border: 1px solid rgba(255, 255, 255, 0.25);
-		border-radius: 8px;
-		background: rgba(0, 152, 121, 0.35);
-		backdrop-filter: blur(8px);
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-		color: #fff;
-		font-weight: 600;
-		text-align: center;
-		cursor: pointer;
-	}
-
-	.styled-button:hover {
-		background: rgba(0, 152, 121, 0.6);
-	}
-
-	.upload-wrapper {
-		position: relative;
-		overflow: hidden;
-	}
-
-	.upload-wrapper input {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		opacity: 0;
-		cursor: pointer;
-	}
-
-	.upload-wrapper:focus-within {
-		outline: 3px solid #efbf04;
-		outline-offset: 3px;
-	}
-
-	.feedback {
-		margin: 0;
-		color: #fff;
-		text-align: center;
-	}
-
-	.feedback--error {
-		color: #ffb4b4;
-	}
-
-	@media (max-width: 600px) {
-		.control-panel {
-			width: 95%;
+	@media (max-width: 720px) {
+		.dashboard-page {
+			width: min(100% - 32px, 560px);
+			padding-top: 18px;
 		}
 
-		.control-field select {
-			width: 70%;
+		.topbar {
+			margin-bottom: 26px;
+		}
+
+		.welcome-panel {
+			min-height: 180px;
+			padding: 26px;
+			border-radius: 20px;
+		}
+
+		.sensor-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.dashboard-page {
+			width: calc(100% - 24px);
+			padding: 9px 0 16px;
+		}
+
+		.topbar {
+			gap: 8px;
+			margin-bottom: 7px;
+		}
+
+		.brand {
+			gap: 8px;
+		}
+
+		.brand-mark {
+			width: 32px;
+			height: 32px;
+			border-radius: 10px;
+		}
+
+		.brand-name {
+			font-size: 0.8rem;
+		}
+
+		.topbar-action {
+			min-height: 34px;
+			gap: 4px;
+			padding: 0 9px;
+			border-radius: 9px;
+			font-size: 0.72rem;
+		}
+
+		.topbar-action svg {
+			width: 15px;
+			height: 15px;
+		}
+
+		.welcome-panel {
+			min-height: 0;
+			margin-bottom: 8px;
+			padding: 5px 0;
+			border: 0;
+			border-radius: 0;
+			background: transparent;
+		}
+
+		.eyebrow,
+		.welcome-copy,
+		.location-count {
+			display: none;
+		}
+
+		.welcome-panel h1 {
+			font-size: 1.25rem;
+			letter-spacing: -0.035em;
+		}
+
+		.section-heading {
+			align-items: center;
+			gap: 8px;
+			margin-bottom: 7px;
+		}
+
+		.section-heading h2 {
+			font-size: 0.95rem;
+		}
+
+		.section-heading p {
+			display: none;
+		}
+
+		.period-control {
+			gap: 5px;
+			font-size: 0.68rem;
+		}
+
+		.period-control select {
+			min-height: 31px;
+			padding: 0 22px 0 7px;
+			border-radius: 8px;
+			font-size: 0.72rem;
+		}
+
+		.sensor-grid {
+			gap: 5px;
+		}
+
+		.empty-state {
+			min-height: 180px;
+			padding: 20px;
 		}
 	}
 </style>
