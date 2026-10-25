@@ -23,6 +23,16 @@ in the phone's browser (for example, `http://192.168.1.216:8085`).
 npm run build
 ```
 
+## Deploy to GitHub Pages
+
+```sh
+npm run deploy
+```
+
+This builds the app and publishes its static files to the `main` branch of
+`BartdeJong/WeatherProd`, which serves `https://bartdejong.github.io/WeatherProd/`.
+Git must be authenticated with permission to push to that repository.
+
 ## Tests and lint
 
 ```sh

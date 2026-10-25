@@ -10,6 +10,7 @@
     "serve": "vite --host 0.0.0.0 --port 8085",
     "dev": "vite --host 0.0.0.0 --port 8085",
     "build": "vite build",
+    "deploy": "npm run build && node deploy.mjs",
     "preview": "vite preview --host 0.0.0.0 --port 8085",
     "test": "node --test",
     "lint": "eslint src"
