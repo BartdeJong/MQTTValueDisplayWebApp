@@ -1,12 +1,39 @@
 <script>
 	import { onMount } from "svelte";
 	import { DEFAULT_LOCATIONS, parseLocationsCookie } from "../utils/locations.mjs";
+	import { getLatestReadings } from "../utils/sensorApi.mjs";
 	import SensorRow from "./SensorRow.svelte";
+
+	const DAY_MS = 24 * 60 * 60 * 1000;
+	function formatLocalDate(date) {
+		const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+		return localDate.toISOString().slice(0, 10);
+	}
 
 	let { onManageLocations } = $props();
 	let locations = $state(DEFAULT_LOCATIONS.map(location => ({ ...location })));
 	let locationsError = $state("");
 	let recordAmount = $state(288);
+	let today = $state(formatLocalDate(new Date()));
+	let customFrom = $state(formatLocalDate(new Date(Date.now() - 6 * DAY_MS)));
+	let customTo = $state(today);
+	let latestReadings = $state({});
+	let latestError = $state("");
+	let isLoadingLatest = $state(false);
+	const historyRangeError = $derived.by(() => {
+		if (recordAmount !== "custom") return "";
+		if (!customFrom || !customTo || customFrom > customTo) {
+			return "Kies een geldige start- en einddatum.";
+		}
+		const fromTime = Date.parse(`${customFrom}T00:00:00Z`);
+		const toTime = Date.parse(`${customTo}T00:00:00Z`);
+		const selectedDays = (toTime - fromTime) / DAY_MS + 1;
+		if (!Number.isFinite(selectedDays) || selectedDays > 90) {
+			return "Kies een periode van maximaal 90 dagen.";
+		}
+		if (customTo > today) return "De einddatum mag niet in de toekomst liggen.";
+		return "";
+	});
 
 	onMount(() => {
 		try {
@@ -16,6 +43,50 @@
 			locationsError = `${error.message} De standaardlocaties worden getoond.`;
 			console.error("Saved locations could not be loaded:", error);
 		}
+	});
+
+	$effect(() => {
+		const sensorIds = locations.map(location => location.deviceId);
+		let disposed = false;
+		let requestPending = false;
+		let controller;
+
+		async function refreshReadings() {
+			if (requestPending || disposed) return;
+			if (sensorIds.length === 0) {
+				latestReadings = {};
+				latestError = "";
+				isLoadingLatest = false;
+				return;
+			}
+
+			requestPending = true;
+			controller = new AbortController();
+			isLoadingLatest = true;
+			try {
+				const result = await getLatestReadings(sensorIds, { signal: controller.signal });
+				if (!disposed && !controller.signal.aborted) {
+					latestReadings = result;
+					latestError = "";
+				}
+			} catch (error) {
+				if (!disposed && error.name !== "AbortError" && !controller.signal.aborted) {
+					latestError = "Live metingen ophalen mislukt. Opnieuw proberen volgt automatisch.";
+					console.error("Latest sensor readings request failed:", error);
+				}
+			} finally {
+				requestPending = false;
+				if (!disposed) isLoadingLatest = false;
+			}
+		}
+
+		void refreshReadings();
+		const pollTimer = setInterval(() => void refreshReadings(), 120_000);
+		return () => {
+			disposed = true;
+			clearInterval(pollTimer);
+			controller?.abort();
+		};
 	});
 </script>
 
@@ -61,14 +132,34 @@
 				<h2 id="locations-heading">Jouw locaties</h2>
 				<p>Kies een sensor om de meetgeschiedenis te bekijken.</p>
 			</div>
-			<label class="period-control" for="date-select">
-				<span>Geschiedenis</span>
-				<select id="date-select" bind:value={recordAmount}>
-					<option value={24}>2 uur</option>
-					<option value={288}>1 dag</option>
-					<option value={2016}>1 week</option>
-				</select>
-			</label>
+			<div class="history-range-settings">
+				<label class="period-control" for="date-select">
+					<span>Geschiedenis</span>
+					<select id="date-select" bind:value={recordAmount}>
+						<option value={24}>2 uur</option>
+						<option value={288}>1 dag</option>
+						<option value={2016}>1 week</option>
+						<option value={8640}>30 dagen</option>
+						<option value={25920}>90 dagen</option>
+						<option value="custom">Aangepast</option>
+					</select>
+				</label>
+				{#if recordAmount === "custom"}
+					<div class="custom-date-range">
+						<label for="history-from-date">
+							<span>Van</span>
+							<input id="history-from-date" type="date" bind:value={customFrom} max={today} />
+						</label>
+						<label for="history-to-date">
+							<span>Tot</span>
+							<input id="history-to-date" type="date" bind:value={customTo} max={today} />
+						</label>
+					</div>
+				{/if}
+				{#if historyRangeError}
+					<p class="history-range-error" role="alert">{historyRangeError}</p>
+				{/if}
+			</div>
 		</div>
 
 		{#if locationsError}
@@ -89,7 +180,17 @@
 		{:else}
 			<div class="sensor-grid">
 				{#each locations as location (location.deviceId)}
-					<SensorRow name={location.name} deviceId={location.deviceId} period={recordAmount} />
+					<SensorRow
+						name={location.name}
+						deviceId={location.deviceId}
+						period={recordAmount}
+						customFrom={customFrom}
+						customTo={customTo}
+						periodError={historyRangeError}
+						reading={latestReadings[location.deviceId]}
+						isLoading={isLoadingLatest}
+						errorMessage={latestError}
+					/>
 				{/each}
 			</div>
 		{/if}
@@ -278,6 +379,44 @@
 		font-weight: 600;
 	}
 
+	.history-range-settings {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 8px;
+	}
+
+	.custom-date-range {
+		display: flex;
+		gap: 10px;
+	}
+
+	.custom-date-range label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--color-muted);
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.custom-date-range input {
+		min-height: 38px;
+		width: 148px;
+		padding: 0 8px;
+		border: 1px solid var(--color-border);
+		border-radius: 9px;
+		background: white;
+		color: var(--color-ink);
+		font: inherit;
+	}
+
+	.history-range-error {
+		margin: 0;
+		color: var(--color-danger);
+		font-size: 0.78rem;
+	}
+
 	.sensor-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -435,6 +574,27 @@
 			min-height: 31px;
 			padding: 0 22px 0 7px;
 			border-radius: 8px;
+			font-size: 0.72rem;
+		}
+
+		.history-range-settings {
+			align-items: flex-start;
+		}
+
+		.custom-date-range {
+			flex-wrap: wrap;
+			gap: 5px;
+		}
+
+		.custom-date-range label {
+			gap: 4px;
+			font-size: 0.68rem;
+		}
+
+		.custom-date-range input {
+			min-height: 31px;
+			width: 125px;
+			padding: 0 5px;
 			font-size: 0.72rem;
 		}
 

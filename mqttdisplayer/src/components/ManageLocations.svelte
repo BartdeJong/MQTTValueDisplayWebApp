@@ -1,8 +1,7 @@
 <script>
 	import { onMount } from "svelte";
 	import { DEFAULT_LOCATIONS, formatLocationsCookie, parseLocationsCookie } from "../utils/locations.mjs";
-
-	const AVAILABLE_LOCATIONS_URL = "https://c4c6uk1i70.execute-api.eu-central-1.amazonaws.com/prod/read-locations-cdk";
+	import { getSensors } from "../utils/sensorApi.mjs";
 
 	let { onCancel, onSaved } = $props();
 	let locations = $state(DEFAULT_LOCATIONS.map(location => ({ ...location })));
@@ -35,21 +34,15 @@
 		isLoading = true;
 		loadError = "";
 		try {
-			const response = await fetch(AVAILABLE_LOCATIONS_URL, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				signal: controller.signal,
-			});
-			if (!response.ok) {
-				throw new Error(`De sensorlijst antwoordde met status ${response.status}.`);
-			}
-			const text = await response.text();
+			const available = await getSensors({ signal: controller.signal });
 			if (controller.signal.aborted) return;
-			const available = text.split(",").map(value => value.trim()).filter(Boolean);
 			const existing = new Set(locations.map(location => location.deviceId));
 			possibleLocations = available
-				.filter(deviceId => !existing.has(deviceId))
-				.map((text, index) => ({ text, id: `available-location-${index}` }));
+				.filter(sensor => !existing.has(sensor.sensorId))
+				.map((sensor, index) => ({
+					text: sensor.sensorId,
+					id: `available-location-${index}`,
+				}));
 		} catch (error) {
 			if (error.name !== "AbortError" && !controller.signal.aborted) {
 				loadError = "Beschikbare sensoren ophalen mislukt. Probeer het later opnieuw.";

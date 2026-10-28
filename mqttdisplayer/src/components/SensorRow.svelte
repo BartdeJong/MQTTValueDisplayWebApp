@@ -1,75 +1,37 @@
 <script>
-	import { onMount } from "svelte";
 	import { formatAge, getSensorFreshness, parseTimestamp } from "../utils/sensorData.mjs";
 
-	const SENSOR_URL = "https://681u4lp0vi.execute-api.eu-central-1.amazonaws.com/prod/read-temp-hum-cdk";
-
-	let { name, deviceId, period } = $props();
-	let jsonResponse = $state(null);
-	let lastUpdatedAt = $state(null);
+	let {
+		name,
+		deviceId,
+		period,
+		customFrom,
+		customTo,
+		periodError,
+		reading,
+		isLoading,
+		errorMessage,
+	} = $props();
 	let showHistory = $state(false);
-	let isLoading = $state(false);
-	let errorMessage = $state("");
 	let now = $state(Date.now());
 	let HistoryComponent = $state(null);
 	let historyLoadError = $state("");
 
 	const observationTime = $derived.by(() => {
-		const sensorTime = jsonResponse && parseTimestamp(jsonResponse.date_time2);
-		return Number.isFinite(sensorTime) ? sensorTime : lastUpdatedAt;
+		const sensorTime = reading && parseTimestamp(reading.timestamp);
+		return Number.isFinite(sensorTime) ? sensorTime : null;
 	});
 	const freshness = $derived(getSensorFreshness(observationTime, now));
 	const statusText = $derived.by(() => {
-		if (isLoading && !jsonResponse) return "Meting wordt geladen…";
+		if (isLoading && !reading) return "Meting wordt geladen…";
 		if (errorMessage) return errorMessage;
-		if (!jsonResponse) return "Nog geen meting beschikbaar";
+		if (!reading) return "Nog geen meting beschikbaar";
 		if (freshness.state !== "fresh") {
 			return `Niet recent · ${formatAge(observationTime, now)}`;
 		}
 		return `Actueel · ${formatAge(observationTime, now)}`;
 	});
-	const statusClass = $derived(`sensor-status sensor-status--${jsonResponse ? freshness.state : "error"}`);
-
-	let activeController;
-
-	async function getTempAndHum() {
-		if (isLoading) return;
-		isLoading = true;
-		const controller = new AbortController();
-		activeController = controller;
-		try {
-			const response = await fetch(SENSOR_URL, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ sensor_name: deviceId }),
-				signal: controller.signal,
-			});
-			if (!response.ok) {
-				throw new Error(`De sensorserver antwoordde met status ${response.status}.`);
-			}
-			const result = await response.json();
-			if (controller.signal.aborted) return;
-			if (result.message === "Sensor not found") {
-				jsonResponse = null;
-				errorMessage = "Sensor niet gevonden.";
-				return;
-			}
-			if (!Number.isFinite(Number(result.temperature)) ||
-				!Number.isFinite(Number(result.humidity))) {
-				throw new Error("De sensorserver stuurde ongeldige meetwaarden.");
-			}
-			jsonResponse = result;
-			lastUpdatedAt = Date.now();
-			errorMessage = "";
-		} catch (error) {
-			if (error.name !== "AbortError" && !controller.signal.aborted) {
-				errorMessage = "Meting ophalen mislukt. Opnieuw proberen volgt automatisch.";
-				console.error("Sensor reading request failed:", error);
-			}
-		} finally {
-			if (!controller.signal.aborted) isLoading = false;
-		}
-	}
+	const statusClass = $derived(`sensor-status sensor-status--${reading ? freshness.state : "error"}`);
 
 	async function toggleHistory() {
 		showHistory = !showHistory;
@@ -86,22 +48,15 @@
 		}
 	}
 
-	onMount(() => {
-		void getTempAndHum();
-		const pollTimer = setInterval(() => void getTempAndHum(), 120_000);
+	$effect(() => {
 		const refreshTimer = setInterval(() => {
 			now = Date.now();
 		}, 30_000);
-
-		return () => {
-			clearInterval(pollTimer);
-			clearInterval(refreshTimer);
-			activeController?.abort();
-		};
+		return () => clearInterval(refreshTimer);
 	});
 </script>
 
-<article class="sensor-card" class:sensor-row--stale={jsonResponse && freshness.state !== "fresh"}>
+<article class="sensor-card" class:sensor-row--stale={reading && freshness.state !== "fresh"}>
 	<button class="sensor-card-summary" type="button" aria-expanded={showHistory} onclick={toggleHistory}>
 		<header class="sensor-card-heading">
 			<div class="sensor-place">
@@ -126,7 +81,7 @@
 					</svg>
 					Temperatuur
 				</span>
-				<strong>{jsonResponse ? jsonResponse.temperature : "—"}<small>{jsonResponse ? "°C" : ""}</small></strong>
+				<strong>{reading ? reading.temperature : "—"}<small>{reading ? "°C" : ""}</small></strong>
 			</div>
 			<div class="measurement">
 				<span class="measurement-label">
@@ -136,19 +91,28 @@
 					</svg>
 					Luchtvochtigheid
 				</span>
-				<strong>{jsonResponse ? jsonResponse.humidity : "—"}<small>{jsonResponse ? "%" : ""}</small></strong>
+				<strong>{reading ? reading.humidity : "—"}<small>{reading ? "%" : ""}</small></strong>
 			</div>
 		</div>
 	</button>
 
-	{#if showHistory && historyLoadError}
+	{#if showHistory && periodError}
+		<div class="history-panel">
+			<p class="sensor-error" role="alert">{periodError}</p>
+		</div>
+	{:else if showHistory && historyLoadError}
 		<div class="history-panel">
 			<p class="sensor-error" role="alert">{historyLoadError}</p>
 			<button class="history-retry" type="button" onclick={loadHistoryComponent}>Opnieuw proberen</button>
 		</div>
 	{:else if showHistory && HistoryComponent}
 		<div class="history-panel">
-			<HistoryComponent sensorName={deviceId} period={Number(period)} />
+			<HistoryComponent
+				sensorName={deviceId}
+				period={period}
+				customFrom={customFrom}
+				customTo={customTo}
+			/>
 		</div>
 	{/if}
 </article>
