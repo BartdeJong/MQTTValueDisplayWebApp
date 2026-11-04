@@ -32,9 +32,9 @@ The app never falls back to the legacy API endpoints.
 
 History supports 2-hour, 1-day, 1-week, 30-day, and 90-day presets, plus custom
 date ranges up to 90 days. Ranges up to 7 days use raw readings; longer ranges
-use one representative reading near the midpoint of each UTC day to keep
-requests bounded. Long-range charts label their min/average/max as sample
-statistics, not full-day extrema or averages.
+use the average of all readings for each UTC day to keep requests bounded.
+Long-range charts show each day's minimum, average, and maximum; overall
+averages are weighted by the number of readings in each day.
 
 ## Production build
 

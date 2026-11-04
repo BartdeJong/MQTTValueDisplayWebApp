@@ -47,7 +47,7 @@
 	);
 	const historyDescription = $derived.by(() => {
 		if (historyDataMode !== "sampled") return "";
-		return historyInterval === "hour" ? " · steekproef per uur" : " · dagelijkse steekproef";
+		return historyInterval === "hour" ? " · steekproef per uur" : " · daggemiddelde";
 	});
 	const selectedRangeDuration = $derived.by(() => {
 		if (period !== "custom") return Number(period) * SAMPLE_INTERVAL_MS;
@@ -372,10 +372,10 @@
 						<strong>{chart.latest} {chart.unit}</strong>
 					</header>
 					<dl class="metric-stats">
-						<div><dt>{historyDataMode === "sampled" ? "Steekproef min" : "Min"}</dt><dd>{chart.min} {chart.unit}</dd></div>
-						<div><dt>{historyDataMode === "sampled" ? "Steekproef gem." : "Gem."}</dt><dd>{chart.average} {chart.unit}</dd></div>
-						<div><dt>{historyDataMode === "sampled" ? "Steekproef max" : "Max"}</dt><dd>{chart.max} {chart.unit}</dd></div>
-						<div><dt>{historyDataMode === "sampled" ? "Laatste steekproef" : "Laatste"}</dt><dd>{chart.latest} {chart.unit}</dd></div>
+						<div><dt>{historyDataMode === "sampled" ? historyInterval === "day" ? "Dag min" : "Steekproef min" : "Min"}</dt><dd>{chart.min} {chart.unit}</dd></div>
+						<div><dt>{historyDataMode === "sampled" ? historyInterval === "day" ? "Daggem." : "Steekproef gem." : "Gem."}</dt><dd>{chart.average} {chart.unit}</dd></div>
+						<div><dt>{historyDataMode === "sampled" ? historyInterval === "day" ? "Dag max" : "Steekproef max" : "Max"}</dt><dd>{chart.max} {chart.unit}</dd></div>
+						<div><dt>{historyDataMode === "sampled" ? historyInterval === "day" ? "Laatste daggem." : "Laatste steekproef" : "Laatste"}</dt><dd>{chart.latest} {chart.unit}</dd></div>
 					</dl>
 					<svg
 						class="history-chart"
