@@ -124,32 +124,38 @@ test("getSensorReadings follows history page cursors", async () => {
 test("getSensorReadings preserves sampled interval metadata", async () => {
   const originalFetch = globalThis.fetch;
   const originalApiUrl = globalThis.__SENSOR_API_BASE_URL__;
+  let requestUrl;
   globalThis.__SENSOR_API_BASE_URL__ = "https://api.example/prod/v1";
-  globalThis.fetch = async () => new Response(JSON.stringify({
-    interval: "day",
-    dataMode: "sampled",
-    readings: [{
-      timestamp: "2026-10-28T10:00:00Z",
-      temperature: 20,
-      humidity: 45,
-      temperatureMin: 20,
-      temperatureMax: 20,
-      humidityMin: 45,
-      humidityMax: 45,
-      sampleCount: 1,
-    }],
-    nextCursor: null,
-  }), { status: 200 });
+  globalThis.fetch = async url => {
+    requestUrl = String(url);
+    return new Response(JSON.stringify({
+      interval: "day",
+      dataMode: "sampled",
+      readings: [{
+        timestamp: "2026-10-28T10:00:00Z",
+        temperature: 20,
+        humidity: 45,
+        temperatureMin: 20,
+        temperatureMax: 20,
+        humidityMin: 45,
+        humidityMax: 45,
+        sampleCount: 1,
+      }],
+      nextCursor: null,
+    }), { status: 200 });
+  };
 
   try {
     const result = await getSensorReadings(
       "living room",
       "2026-09-28T00:00:00Z",
-      "2026-10-28T23:59:59Z"
+      "2026-10-28T23:59:59Z",
+      { interval: "day" }
     );
     assert.equal(result.interval, "day");
     assert.equal(result.dataMode, "sampled");
     assert.equal(result.readings[0].sampleCount, 1);
+    assert.match(requestUrl, /interval=day/);
   } finally {
     globalThis.fetch = originalFetch;
     if (originalApiUrl === undefined) delete globalThis.__SENSOR_API_BASE_URL__;

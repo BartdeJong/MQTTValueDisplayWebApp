@@ -239,6 +239,7 @@
 			return {
 				from: new Date(start).toISOString(),
 				to: new Date(end).toISOString(),
+				interval: selectedDays > 7 ? "day" : "raw",
 			};
 		}
 
@@ -250,6 +251,7 @@
 		return {
 			from: new Date(to - duration).toISOString(),
 			to: new Date(to).toISOString(),
+			interval: duration > 7 * DAY_MS ? "day" : "raw",
 		};
 	}
 
@@ -258,7 +260,10 @@
 
 		for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
 			try {
-				return await getSensorReadings(requestSensor, range.from, range.to, { signal });
+				return await getSensorReadings(requestSensor, range.from, range.to, {
+					signal,
+					interval: range.interval,
+				});
 			} catch (error) {
 				if (error.name === "AbortError" || signal.aborted) throw error;
 				if (error.status && ![408, 429].includes(error.status) && error.status < 500) {
