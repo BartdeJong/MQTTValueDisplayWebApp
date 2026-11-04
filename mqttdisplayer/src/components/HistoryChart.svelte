@@ -32,7 +32,7 @@
 		day: DAY_MS,
 	};
 
-	let { sensorName, period, customFrom, customTo } = $props();
+	let { sensorName, period, customFrom, customTo, showDailyRange } = $props();
 	let historicData = $state({ temperature: null, humidity: null });
 	let historyInterval = $state("raw");
 	let historyDataMode = $state("raw");
@@ -49,6 +49,9 @@
 		if (historyDataMode !== "sampled") return "";
 		return historyInterval === "hour" ? " · steekproef per uur" : " · daggemiddelde";
 	});
+	const showDailyRangeBand = $derived(
+		showDailyRange && historyDataMode === "sampled" && historyInterval === "day"
+	);
 	const selectedRangeDuration = $derived.by(() => {
 		if (period !== "custom") return Number(period) * SAMPLE_INTERVAL_MS;
 		const from = Date.parse(`${customFrom}T00:00:00Z`);
@@ -131,6 +134,8 @@
 			const points = series.readings.map(reading => ({
 				x: xForTimestamp(reading.chartTimestamp),
 				y: yForValue(reading.value),
+				yMinimum: yForValue(reading.minimum ?? reading.value),
+				yMaximum: yForValue(reading.maximum ?? reading.value),
 				timestamp: reading.chartTimestamp,
 				value: reading.value,
 			}));
@@ -149,6 +154,26 @@
 				.map(pointsInSegment => pointsInSegment.map((point, index) =>
 					`${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`
 				).join(" "));
+			const rangePaths = showDailyRangeBand
+				? segments
+					.filter(pointsInSegment => pointsInSegment.length > 1)
+					.map(pointsInSegment => {
+						const maximumPath = pointsInSegment.map((point, index) =>
+							`${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.yMaximum.toFixed(2)}`
+						).join(" ");
+						const minimumPath = pointsInSegment.slice().reverse().map(point =>
+							`L ${point.x.toFixed(2)} ${point.yMinimum.toFixed(2)}`
+						).join(" ");
+						return `${maximumPath} ${minimumPath} Z`;
+					})
+				: [];
+			const rangeWhiskers = showDailyRangeBand
+				? points.map(point => ({
+					x: point.x,
+					yMaximum: point.yMaximum,
+					yMinimum: point.yMinimum,
+				}))
+				: [];
 			const latest = series.readings.at(-1);
 			const selectedReading = series.readings.reduce((nearest, reading) =>
 				!nearest || Math.abs(reading.chartTimestamp - nearestTime) <
@@ -160,6 +185,8 @@
 					x: xForTimestamp(selectedReading.chartTimestamp),
 					y: yForValue(selectedReading.value),
 					value: selectedReading.value,
+					minimum: numberFormat.format(selectedReading.minimum ?? selectedReading.value),
+					maximum: numberFormat.format(selectedReading.maximum ?? selectedReading.value),
 				}
 				: null;
 
@@ -168,6 +195,8 @@
 				plot,
 				yTicks,
 				xTicks,
+				rangePaths,
+				rangeWhiskers,
 				linePaths,
 				latest: latest ? numberFormat.format(latest.value) : "—",
 				min: values.length ? numberFormat.format(valueMin) : "—",
@@ -386,7 +415,7 @@
 						class="history-chart"
 						viewBox="0 0 360 148"
 						role="img"
-						aria-label={`${chart.title}, van ${chart.min} tot ${chart.max} ${chart.unit}`}
+						aria-label={`${chart.title}, van ${chart.min} tot ${chart.max} ${chart.unit}${showDailyRangeBand ? ", dagbereik min–max getoond" : ""}`}
 					>
 						<g class="chart-grid" aria-hidden="true">
 							{#each chart.yTicks as tick (tick.y)}
@@ -394,6 +423,19 @@
 								<text x={chart.plot.left - 7} y={tick.y + 3} text-anchor="end">{tick.label}</text>
 							{/each}
 						</g>
+						{#each chart.rangePaths as rangePath, index (`${chart.key}-range-${index}`)}
+							<path class="chart-range" d={rangePath} fill={chart.color} />
+						{/each}
+						{#each chart.rangeWhiskers as range, index (`${chart.key}-whisker-${index}`)}
+							<line
+								class="chart-range-whisker"
+								x1={range.x}
+								x2={range.x}
+								y1={range.yMaximum}
+								y2={range.yMinimum}
+								stroke={chart.color}
+							/>
+						{/each}
 						{#each chart.linePaths as linePath, index (`${chart.key}-${index}`)}
 							<path class="chart-line" d={linePath} stroke={chart.color} />
 						{/each}
@@ -454,7 +496,9 @@
 					{#each chartModel.charts as chart (chart.key)}
 						<span>
 							<span class="metric-color" style={`--series-color: ${chart.color}`} aria-hidden="true"></span>
-							{chart.title}: {chart.selectedPoint ? `${new Intl.NumberFormat("nl-NL", { maximumFractionDigits: 1 }).format(chart.selectedPoint.value)} ${chart.unit}` : "geen meting"}
+							{chart.title}: {chart.selectedPoint
+								? `${new Intl.NumberFormat("nl-NL", { maximumFractionDigits: 1 }).format(chart.selectedPoint.value)} ${chart.unit}${showDailyRangeBand ? ` (min ${chart.selectedPoint.minimum}, max ${chart.selectedPoint.maximum})` : ""}`
+								: "geen meting"}
 						</span>
 					{/each}
 				</div>
@@ -601,6 +645,17 @@
 		stroke-linecap: round;
 		stroke-linejoin: round;
 		stroke-width: 2.5;
+		vector-effect: non-scaling-stroke;
+	}
+
+	.chart-range {
+		opacity: 0.16;
+	}
+
+	.chart-range-whisker {
+		stroke-linecap: round;
+		stroke-opacity: 0.55;
+		stroke-width: 1.25;
 		vector-effect: non-scaling-stroke;
 	}
 

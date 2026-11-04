@@ -34,8 +34,10 @@ History supports 2-hour, 1-day, 1-week, 30-day, and 90-day presets, plus custom
 date ranges up to 90 days. Ranges up to 7 days use raw readings; longer ranges
 use precomputed averages for complete UTC days and aggregate raw readings only
 for partial boundary days.
-Long-range charts show each day's minimum, average, and maximum; overall
-averages are weighted by the number of readings in each day.
+Long-range charts show daily averages by default. The dashboard's "Dagbereik
+(min–max)" toggle next to the history selector overlays each expanded chart
+with that day's minimum-to-maximum band and shows those values for the selected
+day. Overall averages are weighted by the number of readings in each day.
 
 ## Production build
 

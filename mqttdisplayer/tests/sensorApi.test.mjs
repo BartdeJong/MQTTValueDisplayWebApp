@@ -155,6 +155,10 @@ test("getSensorReadings preserves sampled interval metadata", async () => {
     assert.equal(result.interval, "day");
     assert.equal(result.dataMode, "sampled");
     assert.equal(result.readings[0].sampleCount, 1);
+    assert.equal(result.readings[0].temperatureMin, 20);
+    assert.equal(result.readings[0].temperatureMax, 20);
+    assert.equal(result.readings[0].humidityMin, 45);
+    assert.equal(result.readings[0].humidityMax, 45);
     assert.match(requestUrl, /interval=day/);
   } finally {
     globalThis.fetch = originalFetch;

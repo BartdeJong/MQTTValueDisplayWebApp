@@ -7,6 +7,7 @@
 		period,
 		customFrom,
 		customTo,
+		showDailyRange,
 		periodError,
 		reading,
 		isLoading,
@@ -112,6 +113,7 @@
 				period={period}
 				customFrom={customFrom}
 				customTo={customTo}
+				showDailyRange={showDailyRange}
 			/>
 		</div>
 	{/if}

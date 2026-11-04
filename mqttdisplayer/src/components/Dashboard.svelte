@@ -5,6 +5,7 @@
 	import SensorRow from "./SensorRow.svelte";
 
 	const DAY_MS = 24 * 60 * 60 * 1000;
+	const SAMPLE_INTERVAL_MS = 5 * 60 * 1000;
 	function formatLocalDate(date) {
 		const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
 		return localDate.toISOString().slice(0, 10);
@@ -14,6 +15,7 @@
 	let locations = $state(DEFAULT_LOCATIONS.map(location => ({ ...location })));
 	let locationsError = $state("");
 	let recordAmount = $state(288);
+	let showDailyRange = $state(false);
 	let today = $state(formatLocalDate(new Date()));
 	let customFrom = $state(formatLocalDate(new Date(Date.now() - 6 * DAY_MS)));
 	let customTo = $state(today);
@@ -33,6 +35,15 @@
 		}
 		if (customTo > today) return "De einddatum mag niet in de toekomst liggen.";
 		return "";
+	});
+	const usesDailyAggregation = $derived.by(() => {
+		if (recordAmount !== "custom") {
+			return Number(recordAmount) * SAMPLE_INTERVAL_MS > 7 * DAY_MS;
+		}
+		if (historyRangeError) return false;
+		const fromTime = Date.parse(`${customFrom}T00:00:00Z`);
+		const toTime = Date.parse(`${customTo}T00:00:00Z`);
+		return (toTime - fromTime) / DAY_MS + 1 > 7;
 	});
 
 	onMount(() => {
@@ -133,17 +144,25 @@
 				<p>Kies een sensor om de meetgeschiedenis te bekijken.</p>
 			</div>
 			<div class="history-range-settings">
-				<label class="period-control" for="date-select">
-					<span>Geschiedenis</span>
-					<select id="date-select" bind:value={recordAmount}>
-						<option value={24}>2 uur</option>
-						<option value={288}>1 dag</option>
-						<option value={2016}>1 week</option>
-						<option value={8640}>30 dagen</option>
-						<option value={25920}>90 dagen</option>
-						<option value="custom">Aangepast</option>
-					</select>
-				</label>
+				<div class="history-range-controls">
+					<label class="period-control" for="date-select">
+						<span>Geschiedenis</span>
+						<select id="date-select" bind:value={recordAmount}>
+							<option value={24}>2 uur</option>
+							<option value={288}>1 dag</option>
+							<option value={2016}>1 week</option>
+							<option value={8640}>30 dagen</option>
+							<option value={25920}>90 dagen</option>
+							<option value="custom">Aangepast</option>
+						</select>
+					</label>
+					{#if usesDailyAggregation}
+						<label class="daily-range-toggle">
+							<input type="checkbox" bind:checked={showDailyRange} />
+							<span>Dagbereik (min–max)</span>
+						</label>
+					{/if}
+				</div>
 				{#if recordAmount === "custom"}
 					<div class="custom-date-range">
 						<label for="history-from-date">
@@ -186,6 +205,7 @@
 						period={recordAmount}
 						customFrom={customFrom}
 						customTo={customTo}
+						showDailyRange={showDailyRange}
 						periodError={historyRangeError}
 						reading={latestReadings[location.deviceId]}
 						isLoading={isLoadingLatest}
@@ -386,6 +406,31 @@
 		gap: 8px;
 	}
 
+	.history-range-controls {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 12px;
+	}
+
+	.daily-range-toggle {
+		display: inline-flex;
+		min-height: 42px;
+		align-items: center;
+		gap: 0.4rem;
+		color: var(--color-ink);
+		font-size: 0.8rem;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+
+	.daily-range-toggle input {
+		width: 1rem;
+		height: 1rem;
+		margin: 0;
+		accent-color: var(--color-primary-dark);
+	}
+
 	.custom-date-range {
 		display: flex;
 		gap: 10px;
@@ -553,6 +598,7 @@
 
 		.section-heading {
 			align-items: center;
+			flex-wrap: wrap;
 			gap: 8px;
 			margin-bottom: 7px;
 		}
@@ -579,6 +625,22 @@
 
 		.history-range-settings {
 			align-items: flex-start;
+		}
+
+		.history-range-controls {
+			justify-content: flex-start;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		.daily-range-toggle {
+			min-height: 31px;
+			font-size: 0.68rem;
+		}
+
+		.daily-range-toggle input {
+			width: 0.9rem;
+			height: 0.9rem;
 		}
 
 		.custom-date-range {
